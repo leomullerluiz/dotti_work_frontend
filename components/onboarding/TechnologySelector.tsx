@@ -1,0 +1,169 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { TECHNOLOGY_CATALOG } from "@/data/constants";
+import type { SkillLevel, TechCategory, UserTechnology } from "@/types";
+import { cn } from "@/utils/cn";
+import { SearchInput } from "../ui/SearchInput";
+
+const skillLevels: SkillLevel[] = ["Learning", "Basic", "Daily use", "Advanced"];
+
+export function TechnologySelector({
+  selected,
+  onChange,
+}: {
+  selected: UserTechnology[];
+  onChange: (technologies: UserTechnology[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<TechCategory>("Languages");
+
+  const options = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return Object.entries(TECHNOLOGY_CATALOG).flatMap(([category, technologies]) =>
+      technologies
+        .filter((technology) =>
+          normalizedQuery ? technology.toLowerCase().includes(normalizedQuery) : true,
+        )
+        .map((technology) => ({
+          name: technology,
+          category: category as TechCategory,
+        })),
+    );
+  }, [query]);
+
+  const visibleOptions = query
+    ? options
+    : options.filter((technology) => technology.category === activeCategory);
+
+  const addTechnology = (technology: { name: string; category: TechCategory }) => {
+    if (selected.some((item) => item.name === technology.name)) {
+      return;
+    }
+
+    onChange([...selected, { ...technology, level: "Basic" }]);
+  };
+
+  const removeTechnology = (name: string) => {
+    onChange(selected.filter((technology) => technology.name !== name));
+  };
+
+  const updateLevel = (name: string, level: SkillLevel) => {
+    onChange(
+      selected.map((technology) =>
+        technology.name === name ? { ...technology, level } : technology,
+      ),
+    );
+  };
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Search TypeScript, Docker, Laravel..."
+        />
+
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          {Object.keys(TECHNOLOGY_CATALOG).map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setActiveCategory(category as TechCategory)}
+              className={cn(
+                "whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                activeCategory === category && !query
+                  ? "border-coral-400 bg-coral-400/10 text-coral-700 dark:text-coral-200"
+                  : "border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-coral-300 hover:text-coral-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300",
+              )}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          {visibleOptions.map((technology) => {
+            const isSelected = selected.some((item) => item.name === technology.name);
+            return (
+              <button
+                key={`${technology.category}-${technology.name}`}
+                type="button"
+                onClick={() => addTechnology(technology)}
+                disabled={isSelected}
+                className={cn(
+                  "flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition",
+                  isSelected
+                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-700 dark:text-emerald-200"
+                    : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-coral-300 hover:bg-coral-400/5 dark:border-white/10 dark:bg-black/20 dark:text-zinc-300",
+                )}
+              >
+                <span>
+                  <span className="block font-medium">{technology.name}</span>
+                  <span className="text-xs text-zinc-500">{technology.category}</span>
+                </span>
+                <Plus size={15} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <h3 className="font-semibold text-zinc-950 dark:text-white">
+          Selected stack
+        </h3>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          Set how comfortable you are with each technology.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {selected.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+              Select at least one technology to continue.
+            </p>
+          ) : (
+            selected.map((technology) => (
+              <div
+                key={technology.name}
+                className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20"
+              >
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-950 dark:text-white">
+                      {technology.name}
+                    </p>
+                    <p className="text-xs text-zinc-500">{technology.category}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeTechnology(technology.name)}
+                    className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-white/10 dark:hover:text-white"
+                    aria-label={`Remove ${technology.name}`}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+                <select
+                  value={technology.level}
+                  onChange={(event) =>
+                    updateLevel(technology.name, event.target.value as SkillLevel)
+                  }
+                  className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-100"
+                >
+                  {skillLevels.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
