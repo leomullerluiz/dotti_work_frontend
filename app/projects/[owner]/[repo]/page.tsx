@@ -1,4 +1,5 @@
 import { ProjectDetailPage } from "@/components/projects/ProjectDetailPage";
+import { AppProviders } from "@/contexts/AppProviders";
 import { findProject, mockProjects } from "@/data/repositories";
 
 type ProjectRouteProps = {
@@ -17,5 +18,9 @@ export function generateStaticParams() {
 
 export default async function ProjectRoute({ params }: ProjectRouteProps) {
   const { owner, repo } = await params;
-  return <ProjectDetailPage project={findProject(owner, repo)} />;
+  return (
+    <AppProviders>
+      <ProjectDetailPage project={findProject(owner, repo)} />
+    </AppProviders>
+  );
 }

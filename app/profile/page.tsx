@@ -1,5 +1,10 @@
 import { ProfilePage } from "@/components/profile/ProfilePage";
+import { AppProviders } from "@/contexts/AppProviders";
 
 export default function ProfileRoute() {
-  return <ProfilePage />;
+  return (
+    <AppProviders>
+      <ProfilePage />
+    </AppProviders>
+  );
 }

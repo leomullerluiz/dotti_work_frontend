@@ -1,5 +1,10 @@
 import { MatchesPage } from "@/components/projects/MatchesPage";
+import { AppProviders } from "@/contexts/AppProviders";
 
 export default function MatchesRoute() {
-  return <MatchesPage />;
+  return (
+    <AppProviders>
+      <MatchesPage />
+    </AppProviders>
+  );
 }

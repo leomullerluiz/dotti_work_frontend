@@ -85,7 +85,7 @@ export function SettingsPage() {
             Appearance
           </h2>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Choose a local theme preference. Dark mode is the default.
+            Choose a local theme preference. Light mode is the default.
           </p>
           <div className="mt-5">
             <ThemeToggle />

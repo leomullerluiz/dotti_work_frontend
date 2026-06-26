@@ -1,5 +1,10 @@
 import { HistoryPage } from "@/components/history/HistoryPage";
+import { AppProviders } from "@/contexts/AppProviders";
 
 export default function HistoryRoute() {
-  return <HistoryPage />;
+  return (
+    <AppProviders>
+      <HistoryPage />
+    </AppProviders>
+  );
 }

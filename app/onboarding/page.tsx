@@ -1,5 +1,10 @@
 import { MultiStepOnboarding } from "@/components/onboarding/MultiStepOnboarding";
+import { AppProviders } from "@/contexts/AppProviders";
 
 export default function OnboardingPage() {
-  return <MultiStepOnboarding />;
+  return (
+    <AppProviders>
+      <MultiStepOnboarding />
+    </AppProviders>
+  );
 }

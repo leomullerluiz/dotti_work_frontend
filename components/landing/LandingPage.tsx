@@ -9,7 +9,6 @@ import {
 import { Logo } from "@/components/layout/Logo";
 import { Badge } from "@/components/ui/Badge";
 import { buttonClasses } from "@/components/ui/Button";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { mockProjects } from "@/data/repositories";
 import { formatNumber } from "@/utils/format";
 
@@ -65,7 +64,6 @@ export function LandingPage() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <Link
             href="/onboarding"
             className={buttonClasses({ size: "sm", className: "hidden sm:inline-flex" })}

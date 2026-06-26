@@ -1,5 +1,10 @@
 import { SavedProjectsPage } from "@/components/projects/SavedProjectsPage";
+import { AppProviders } from "@/contexts/AppProviders";
 
 export default function SavedRoute() {
-  return <SavedProjectsPage />;
+  return (
+    <AppProviders>
+      <SavedProjectsPage />
+    </AppProviders>
+  );
 }
