@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Inbox } from "lucide-react";
+import { AnimatedDiv } from "./AnimatedSurface";
 
 export function EmptyState({
   title,
@@ -11,7 +12,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-zinc-300 bg-white/70 px-6 py-12 text-center dark:border-white/10 dark:bg-white/[0.03]">
+    <AnimatedDiv className="rounded-xl border border-dashed border-zinc-300 bg-white/70 px-6 py-12 text-center dark:border-white/10 dark:bg-white/[0.03]">
       <div className="mx-auto flex size-12 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
         <Inbox size={22} />
       </div>
@@ -22,6 +23,6 @@ export function EmptyState({
         {description}
       </p>
       {action ? <div className="mt-6">{action}</div> : null}
-    </div>
+    </AnimatedDiv>
   );
 }

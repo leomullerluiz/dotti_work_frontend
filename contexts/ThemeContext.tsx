@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import { STORAGE_KEYS } from "@/data/constants";
@@ -13,6 +14,7 @@ import type { ThemeMode } from "@/types";
 
 type ThemeContextValue = {
   theme: ThemeMode;
+  resolvedTheme: Exclude<ThemeMode, "system">;
   setTheme: (theme: ThemeMode) => void;
 };
 
@@ -20,17 +22,32 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.theme, "light");
+  const [resolvedTheme, setResolvedTheme] =
+    useState<Exclude<ThemeMode, "system">>("light");
 
   useEffect(() => {
     const root = document.documentElement;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldUseDark = theme === "dark" || (theme === "system" && prefersDark);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-    root.classList.toggle("dark", shouldUseDark);
-    root.style.colorScheme = shouldUseDark ? "dark" : "light";
+    const applyTheme = () => {
+      const shouldUseDark = theme === "dark" || (theme === "system" && media.matches);
+      const nextResolvedTheme = shouldUseDark ? "dark" : "light";
+
+      root.classList.toggle("dark", shouldUseDark);
+      root.style.colorScheme = nextResolvedTheme;
+      setResolvedTheme(nextResolvedTheme);
+    };
+
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+
+    return () => media.removeEventListener("change", applyTheme);
   }, [theme]);
 
-  const value = useMemo(() => ({ theme, setTheme }), [setTheme, theme]);
+  const value = useMemo(
+    () => ({ resolvedTheme, setTheme, theme }),
+    [resolvedTheme, setTheme, theme],
+  );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
+import { AnimatedAside } from "@/components/ui/AnimatedSurface";
 import {
   ACTIVITY_LEVELS,
   DEFAULT_FILTERS,
@@ -23,19 +25,21 @@ export function ProjectFilters() {
   const { filters, setFilters, resetFilters } = useMatches();
 
   return (
-    <aside className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedAside className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal size={18} className="text-coral-500" />
           <h2 className="font-semibold text-zinc-950 dark:text-white">Filters</h2>
         </div>
-        <button
+        <AnimateButton
           type="button"
           onClick={resetFilters}
           className="text-xs font-medium text-coral-600 hover:text-coral-500 dark:text-coral-300"
+          hoverScale={1.04}
+          tapScale={0.96}
         >
           Reset
-        </button>
+        </AnimateButton>
       </div>
 
       <div className="mt-4 space-y-5">
@@ -50,7 +54,7 @@ export function ProjectFilters() {
             {languages.slice(0, 12).map((language) => {
               const selected = filters.technologies.includes(language);
               return (
-                <button
+                <AnimateButton
                   key={language}
                   type="button"
                   onClick={() =>
@@ -68,7 +72,7 @@ export function ProjectFilters() {
                   }
                 >
                   {language}
-                </button>
+                </AnimateButton>
               );
             })}
           </div>
@@ -189,7 +193,7 @@ export function ProjectFilters() {
           />
         </FilterGroup>
       </div>
-    </aside>
+    </AnimatedAside>
   );
 }
 
@@ -223,7 +227,7 @@ function Select({
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none transition focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-100"
+      className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none transition-[border-color,box-shadow,background-color] focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-100"
     >
       {options.map((option) => (
         <option key={option} value={option}>

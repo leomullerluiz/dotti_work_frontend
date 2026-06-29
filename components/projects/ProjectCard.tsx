@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { AnimatedArticle } from "@/components/ui/AnimatedSurface";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
@@ -46,7 +47,7 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
   };
 
   return (
-    <article className="group rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-xl hover:shadow-coral-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-coral-400/40">
+    <AnimatedArticle className="group rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-xl hover:shadow-coral-500/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-coral-400/40">
       <div className="flex items-start gap-4">
         <RepositoryAvatar
           owner={project.owner}
@@ -154,6 +155,6 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
           </a>
         </div>
       </div>
-    </article>
+    </AnimatedArticle>
   );
 }

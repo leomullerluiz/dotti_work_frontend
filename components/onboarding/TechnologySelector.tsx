@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
+import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { TECHNOLOGY_CATALOG } from "@/data/constants";
 import type { SkillLevel, TechCategory, UserTechnology } from "@/types";
 import { cn } from "@/utils/cn";
@@ -59,7 +61,7 @@ export function TechnologySelector({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <SearchInput
           value={query}
           onChange={setQuery}
@@ -68,7 +70,7 @@ export function TechnologySelector({
 
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {Object.keys(TECHNOLOGY_CATALOG).map((category) => (
-            <button
+            <AnimateButton
               key={category}
               type="button"
               onClick={() => setActiveCategory(category as TechCategory)}
@@ -80,7 +82,7 @@ export function TechnologySelector({
               )}
             >
               {category}
-            </button>
+            </AnimateButton>
           ))}
         </div>
 
@@ -88,7 +90,7 @@ export function TechnologySelector({
           {visibleOptions.map((technology) => {
             const isSelected = selected.some((item) => item.name === technology.name);
             return (
-              <button
+              <AnimateButton
                 key={`${technology.category}-${technology.name}`}
                 type="button"
                 onClick={() => addTechnology(technology)}
@@ -105,13 +107,13 @@ export function TechnologySelector({
                   <span className="text-xs text-zinc-500">{technology.category}</span>
                 </span>
                 <Plus size={15} />
-              </button>
+              </AnimateButton>
             );
           })}
         </div>
-      </div>
+      </AnimatedDiv>
 
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h3 className="font-semibold text-zinc-950 dark:text-white">
           Selected stack
         </h3>
@@ -137,14 +139,16 @@ export function TechnologySelector({
                     </p>
                     <p className="text-xs text-zinc-500">{technology.category}</p>
                   </div>
-                  <button
+                  <AnimateButton
                     type="button"
                     onClick={() => removeTechnology(technology.name)}
                     className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-white/10 dark:hover:text-white"
                     aria-label={`Remove ${technology.name}`}
+                    hoverScale={1.08}
+                    tapScale={0.92}
                   >
                     <X size={15} />
-                  </button>
+                  </AnimateButton>
                 </div>
                 <select
                   value={technology.level}
@@ -163,7 +167,7 @@ export function TechnologySelector({
             ))
           )}
         </div>
-      </div>
+      </AnimatedDiv>
     </div>
   );
 }

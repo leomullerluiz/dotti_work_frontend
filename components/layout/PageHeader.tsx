@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 
 export function PageHeader({
   eyebrow,
@@ -12,7 +13,7 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <AnimatedDiv className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div>
         {eyebrow ? (
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-coral-500">
@@ -29,6 +30,6 @@ export function PageHeader({
         ) : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
-    </div>
+    </AnimatedDiv>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { UserRound } from "lucide-react";
+import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useProfile } from "@/hooks/useProfile";
@@ -11,7 +12,7 @@ export function ProfileSummaryCard() {
   const selectedTechs = profile?.technologies.slice(0, 4) ?? [];
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex items-center gap-3">
         <div className="flex size-10 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
           <UserRound size={20} />
@@ -47,6 +48,6 @@ export function ProfileSummaryCard() {
           </Button>
         </Link>
       )}
-    </div>
+    </AnimatedDiv>
   );
 }

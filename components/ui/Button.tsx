@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import { cn } from "@/utils/cn";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "outline";
@@ -33,7 +34,7 @@ export function buttonClasses({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex transform-gpu items-center justify-center gap-2 rounded-lg font-medium transition-[transform,box-shadow,color,background-color,border-color] hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:scale-100 disabled:opacity-50",
     variants[variant],
     sizes[size],
     className,
@@ -46,14 +47,19 @@ export function Button({
   variant = "primary",
   size = "md",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
+}: Omit<ComponentProps<typeof AnimateButton>, "asChild" | "children"> & {
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }) {
   return (
-    <button className={buttonClasses({ variant, size, className })} {...props}>
+    <AnimateButton
+      className={buttonClasses({ variant, size, className })}
+      hoverScale={props.disabled ? 1 : 1.03}
+      tapScale={props.disabled ? 1 : 0.97}
+      {...props}
+    >
       {children}
-    </button>
+    </AnimateButton>
   );
 }

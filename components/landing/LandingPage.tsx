@@ -7,6 +7,7 @@ import {
   Star,
 } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
+import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { buttonClasses } from "@/components/ui/Button";
 import { mockProjects } from "@/data/repositories";
@@ -102,7 +103,7 @@ export function LandingPage() {
               ["8", "contribution types"],
               ["100%", "local data"],
             ].map(([value, label]) => (
-              <div
+              <AnimatedDiv
                 key={label}
                 className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
               >
@@ -110,12 +111,12 @@ export function LandingPage() {
                 <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                   {label}
                 </div>
-              </div>
+              </AnimatedDiv>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-black/30">
+        <AnimatedDiv className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-black/30">
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-black/30">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -128,7 +129,7 @@ export function LandingPage() {
             </div>
             <div className="mt-4 space-y-3">
               {featured.map((project) => (
-                <div
+                <AnimatedDiv
                   key={project.id}
                   className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
                 >
@@ -155,11 +156,11 @@ export function LandingPage() {
                     </span>
                     <span>{project.goodFirstIssues} good first issues</span>
                   </div>
-                </div>
+                </AnimatedDiv>
               ))}
             </div>
           </div>
-        </div>
+        </AnimatedDiv>
       </section>
 
       <section
@@ -173,7 +174,7 @@ export function LandingPage() {
           />
           <div className="mt-8 grid gap-4 md:grid-cols-4">
             {steps.map(([title, description], index) => (
-              <div
+              <AnimatedDiv
                 key={title}
                 className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-950/60"
               >
@@ -184,7 +185,7 @@ export function LandingPage() {
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                   {description}
                 </p>
-              </div>
+              </AnimatedDiv>
             ))}
           </div>
         </div>
@@ -215,20 +216,20 @@ export function LandingPage() {
           />
           <div className="grid gap-3 sm:grid-cols-2">
             {benefits.map((benefit) => (
-              <div
+              <AnimatedDiv
                 key={benefit}
                 className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-950/60"
               >
                 <CheckCircle2 size={18} className="text-emerald-500" />
                 <span className="text-sm font-medium">{benefit}</span>
-              </div>
+              </AnimatedDiv>
             ))}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-950 p-8 text-white shadow-2xl shadow-zinc-900/15 dark:border-white/10">
+        <AnimatedDiv className="rounded-2xl border border-zinc-200 bg-zinc-950 p-8 text-white shadow-2xl shadow-zinc-900/15 dark:border-white/10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-semibold">
@@ -244,7 +245,7 @@ export function LandingPage() {
               <ArrowRight size={17} />
             </Link>
           </div>
-        </div>
+        </AnimatedDiv>
       </section>
 
       <footer className="border-t border-zinc-200 py-8 dark:border-white/10">

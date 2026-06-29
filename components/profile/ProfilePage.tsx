@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Download, RotateCcw, Upload } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -101,7 +102,7 @@ export function ProfilePage() {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1fr]">
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
             Professional details
           </h2>
@@ -111,9 +112,9 @@ export function ProfilePage() {
             <ProfileRow label="Goal" value={profile.goal} />
             <ProfileRow label="Updated" value={new Date(profile.updatedAt).toLocaleString()} />
           </dl>
-        </section>
+        </AnimatedSection>
 
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
             Contribution preferences
           </h2>
@@ -131,10 +132,10 @@ export function ProfilePage() {
               </Badge>
             ))}
           </div>
-        </section>
+        </AnimatedSection>
       </div>
 
-      <section className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
           Selected technologies
         </h2>
@@ -142,7 +143,7 @@ export function ProfilePage() {
           {(Object.entries(groupedTechnologies) as Array<
             [TechCategory, UserTechnology[]]
           >).map(([category, technologies]) => (
-            <div
+            <AnimatedDiv
               key={category}
               className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-black/20"
             >
@@ -156,10 +157,10 @@ export function ProfilePage() {
                   </Badge>
                 ))}
               </div>
-            </div>
+            </AnimatedDiv>
           ))}
         </div>
-      </section>
+      </AnimatedSection>
 
       <ExportImportDataDialog
         open={dialogOpen}
@@ -185,11 +186,11 @@ export function ProfilePage() {
 
 function ProfileRow({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20">
+    <AnimatedDiv className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20">
       <dt className="text-xs font-medium uppercase tracking-[0.16em] text-zinc-500">
         {label}
       </dt>
       <dd className="mt-1 text-zinc-800 dark:text-zinc-100">{value}</dd>
-    </div>
+    </AnimatedDiv>
   );
 }

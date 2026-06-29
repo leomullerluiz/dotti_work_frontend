@@ -41,7 +41,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition",
+                "flex transform-gpu items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-[transform,color,background-color] hover:scale-[1.01] active:scale-[0.99]",
                 isActive
                   ? "bg-coral-500/10 text-coral-700 dark:text-coral-200"
                   : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white",

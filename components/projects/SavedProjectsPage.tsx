@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Trash2 } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedArticle } from "@/components/ui/AnimatedSurface";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { PROJECT_STATUSES } from "@/data/constants";
@@ -42,7 +44,7 @@ export function SavedProjectsPage() {
 
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {(["All", ...PROJECT_STATUSES] as Tab[]).map((tab) => (
-          <button
+          <AnimateButton
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
@@ -53,7 +55,7 @@ export function SavedProjectsPage() {
             }
           >
             {tab}
-          </button>
+          </AnimateButton>
         ))}
       </div>
 
@@ -75,7 +77,7 @@ export function SavedProjectsPage() {
             }
             const repositoryName = `${project.owner}/${project.repo}`;
             return (
-              <article
+              <AnimatedArticle
                 key={saved.repositoryId}
                 className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
               >
@@ -136,7 +138,7 @@ export function SavedProjectsPage() {
                     </Button>
                   </div>
                 </div>
-              </article>
+              </AnimatedArticle>
             );
           })}
         </div>

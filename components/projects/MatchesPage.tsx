@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BarChart3, Filter, RefreshCcw, UserRound } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedDetails, AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { StatCard } from "@/components/ui/StatCard";
@@ -39,7 +40,7 @@ export function MatchesPage() {
 
       <div className="grid gap-5 lg:grid-cols-[280px_1fr_300px]">
         <div className="lg:sticky lg:top-24 lg:h-fit">
-          <details className="mb-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04] lg:hidden">
+          <AnimatedDetails className="mb-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04] lg:hidden">
             <summary className="flex cursor-pointer items-center gap-2 font-medium text-zinc-950 dark:text-white">
               <Filter size={17} />
               Filters
@@ -47,7 +48,7 @@ export function MatchesPage() {
             <div className="mt-4">
               <ProjectFilters />
             </div>
-          </details>
+          </AnimatedDetails>
           <div className="hidden lg:block">
             <ProjectFilters />
           </div>
@@ -62,7 +63,7 @@ export function MatchesPage() {
             helper={projects[0] ? `${projects[0].owner}/${projects[0].repo}` : "No result"}
             icon={<BarChart3 size={18} />}
           />
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <h2 className="font-semibold text-zinc-950 dark:text-white">
               Profile insights
             </h2>
@@ -85,8 +86,8 @@ export function MatchesPage() {
                 Complete onboarding to personalize the local matching experience.
               </p>
             )}
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+          </AnimatedDiv>
+          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <h2 className="font-semibold text-zinc-950 dark:text-white">
               Active filters
             </h2>
@@ -96,7 +97,7 @@ export function MatchesPage() {
               <p>Health: {filters.healthScore}%+</p>
               <p>Ignored: {ignoredProjectIds.length}</p>
             </div>
-          </div>
+          </AnimatedDiv>
         </aside>
       </div>
     </AppShell>

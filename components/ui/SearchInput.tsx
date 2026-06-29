@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import { cn } from "@/utils/cn";
 
 export function SearchInput({
@@ -29,14 +30,16 @@ export function SearchInput({
         className="min-w-0 flex-1 bg-transparent text-zinc-950 outline-none placeholder:text-zinc-400 dark:text-white"
       />
       {value ? (
-        <button
+        <AnimateButton
           type="button"
           onClick={() => onChange("")}
           className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-white/10 dark:hover:text-white"
           aria-label="Clear search"
+          hoverScale={1.08}
+          tapScale={0.92}
         >
           <X size={14} />
-        </button>
+        </AnimateButton>
       ) : null}
     </label>
   );

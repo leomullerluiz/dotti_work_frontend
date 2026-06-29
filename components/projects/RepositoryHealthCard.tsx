@@ -1,4 +1,5 @@
 import { CheckCircle2, CircleDashed } from "lucide-react";
+import { AnimatedSection } from "@/components/ui/AnimatedSurface";
 import type { HealthChecklistItem } from "@/types";
 
 export function RepositoryHealthCard({
@@ -9,7 +10,7 @@ export function RepositoryHealthCard({
   checklist: HealthChecklistItem[];
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
@@ -39,6 +40,6 @@ export function RepositoryHealthCard({
           </div>
         ))}
       </div>
-    </section>
+    </AnimatedSection>
   );
 }

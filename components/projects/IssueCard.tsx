@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, MessageCircle } from "lucide-react";
+import { AnimatedArticle } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { buttonClasses } from "@/components/ui/Button";
 import { useHistory } from "@/hooks/useHistory";
@@ -21,7 +22,7 @@ export function IssueCard({
   const { addHistory } = useHistory();
 
   return (
-    <article className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedArticle className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-semibold text-zinc-950 dark:text-white">{issue.title}</h3>
@@ -59,6 +60,6 @@ export function IssueCard({
         </span>
         <span>Created {formatDate(issue.createdAt)}</span>
       </div>
-    </article>
+    </AnimatedArticle>
   );
 }

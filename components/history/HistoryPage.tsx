@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { RotateCcw, Trash2 } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedArticle } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -56,7 +58,7 @@ export function HistoryPage() {
 
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {filters.map((filter) => (
-          <button
+          <AnimateButton
             key={filter}
             type="button"
             onClick={() => setActiveFilter(filter)}
@@ -67,7 +69,7 @@ export function HistoryPage() {
             }
           >
             {filter}
-          </button>
+          </AnimateButton>
         ))}
       </div>
 
@@ -85,7 +87,7 @@ export function HistoryPage() {
               ignoredProjectIds.includes(event.repositoryId);
 
             return (
-              <article
+              <AnimatedArticle
                 key={event.id}
                 className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
               >
@@ -115,7 +117,7 @@ export function HistoryPage() {
                     </Button>
                   ) : null}
                 </div>
-              </article>
+              </AnimatedArticle>
             );
           })}
         </div>

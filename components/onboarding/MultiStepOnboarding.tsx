@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import {
   ACTIVITY_LEVELS,
   CONTRIBUTION_TYPES,
@@ -27,6 +28,12 @@ import type {
   UserTechnology,
 } from "@/types";
 import { cn } from "@/utils/cn";
+import {
+  AnimatedAside,
+  AnimatedDiv,
+  AnimatedHeader,
+  AnimatedSection,
+} from "../ui/AnimatedSurface";
 import { Button } from "../ui/Button";
 import { TechnologySelector } from "./TechnologySelector";
 
@@ -143,7 +150,7 @@ export function MultiStepOnboarding() {
   return (
     <div className="min-h-screen bg-app px-4 py-6 text-zinc-950 dark:text-white sm:px-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="rounded-xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04]">
+        <AnimatedHeader className="rounded-xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral-500">
@@ -178,12 +185,12 @@ export function MultiStepOnboarding() {
               </div>
             ))}
           </div>
-        </header>
+        </AnimatedHeader>
 
         {error ? (
-          <div className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-700 dark:text-red-200">
+          <AnimatedDiv className="rounded-lg border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-700 dark:text-red-200">
             {error}
-          </div>
+          </AnimatedDiv>
         ) : null}
 
         {step === 0 ? (
@@ -228,7 +235,7 @@ function ProfileStep({
 }) {
   return (
     <section className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-      <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold">Technical profile</h2>
         <div className="mt-5 grid gap-4">
           <Field label="Name (optional)">
@@ -280,8 +287,8 @@ function ProfileStep({
             </div>
           </Field>
         </div>
-      </div>
-      <aside className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      </AnimatedDiv>
+      <AnimatedAside className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h3 className="font-semibold">How this will be used</h3>
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           The prototype stores this profile only in your browser and uses it to tune
@@ -290,7 +297,7 @@ function ProfileStep({
         <div className="mt-5 rounded-lg border border-coral-400/20 bg-coral-400/10 p-4 text-sm text-coral-800 dark:text-coral-100">
           Future GitHub OAuth can reuse this shape to sync preferences with a real API.
         </div>
-      </aside>
+      </AnimatedAside>
     </section>
   );
 }
@@ -312,7 +319,7 @@ function PreferencesStep({
   };
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <h2 className="text-lg font-semibold">Contribution preferences</h2>
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
         <Field label="Contribution types">
@@ -412,13 +419,13 @@ function PreferencesStep({
           </Field>
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }
 
 function MatchingStep({ message }: { message: string }) {
   return (
-    <section className="flex min-h-[480px] items-center justify-center rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedSection className="flex min-h-[480px] items-center justify-center rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div>
         <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-coral-400/10 text-coral-500">
           <Loader2 className="animate-spin" size={30} />
@@ -437,7 +444,7 @@ function MatchingStep({ message }: { message: string }) {
           ))}
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }
 
@@ -468,7 +475,7 @@ function OptionButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <AnimateButton
       type="button"
       onClick={onClick}
       className={cn(
@@ -480,6 +487,6 @@ function OptionButton({
     >
       {children}
       {active ? <Check size={16} /> : null}
-    </button>
+    </AnimateButton>
   );
 }

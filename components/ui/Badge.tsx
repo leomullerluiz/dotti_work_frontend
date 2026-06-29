@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { cn } from "@/utils/cn";
 
 type BadgeTone = "neutral" | "accent" | "success" | "warning" | "danger" | "blue";
@@ -26,14 +27,22 @@ export function Badge({
   className?: string;
 }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
-        tones[tone],
-        className,
-      )}
+    <Shine
+      asChild
+      enableOnHover
+      color="rgba(255,255,255,0.9)"
+      opacity={0.35}
+      duration={700}
     >
-      {children}
-    </span>
+      <span
+        className={cn(
+          "inline-flex transform-gpu items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-[transform,box-shadow,color,background-color,border-color] hover:-translate-y-px active:scale-95",
+          tones[tone],
+          className,
+        )}
+      >
+        {children}
+      </span>
+    </Shine>
   );
 }

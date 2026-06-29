@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { GitBranch, Trash2, Upload } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -80,7 +81,7 @@ export function SettingsPage() {
       />
 
       <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
             Appearance
           </h2>
@@ -90,9 +91,9 @@ export function SettingsPage() {
           <div className="mt-5">
             <ThemeToggle />
           </div>
-        </section>
+        </AnimatedSection>
 
-        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
@@ -109,10 +110,10 @@ export function SettingsPage() {
             <GitBranch size={16} />
             Connect GitHub
           </Button>
-        </section>
+        </AnimatedSection>
       </div>
 
-      <section className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
           Data
         </h2>
@@ -154,9 +155,9 @@ export function SettingsPage() {
             Reset application
           </Button>
         </div>
-      </section>
+      </AnimatedSection>
 
-      <section className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
           Local storage summary
         </h2>
@@ -166,7 +167,7 @@ export function SettingsPage() {
           <Summary label="Ignored" value={ignoredProjectIds.length} />
           <Summary label="History" value={history.length} />
         </div>
-      </section>
+      </AnimatedSection>
 
       <ExportImportDataDialog
         open={dataDialogOpen}
@@ -192,11 +193,11 @@ export function SettingsPage() {
 
 function Summary({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20">
+    <AnimatedDiv className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20">
       <p className="text-xs font-medium uppercase tracking-[0.16em] text-zinc-500">
         {label}
       </p>
       <p className="mt-1 font-semibold text-zinc-950 dark:text-white">{value}</p>
-    </div>
+    </AnimatedDiv>
   );
 }

@@ -1,6 +1,8 @@
+import { AnimatedDiv } from "./AnimatedSurface";
+
 export function SkeletonProjectCard() {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex animate-pulse gap-4">
         <div className="size-11 rounded-lg bg-zinc-200 dark:bg-white/10" />
         <div className="flex-1 space-y-3">
@@ -14,6 +16,6 @@ export function SkeletonProjectCard() {
           </div>
         </div>
       </div>
-    </div>
+    </AnimatedDiv>
   );
 }

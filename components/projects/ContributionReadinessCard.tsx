@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, Sparkles } from "lucide-react";
+import { AnimatedSection } from "@/components/ui/AnimatedSurface";
 import type { MatchedProject } from "@/types";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 
@@ -8,7 +9,7 @@ export function ContributionReadinessCard({
   project: MatchedProject;
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+    <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -55,6 +56,6 @@ export function ContributionReadinessCard({
           </ul>
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }

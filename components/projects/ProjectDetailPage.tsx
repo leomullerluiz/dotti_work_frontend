@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { AnimatedSection } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -121,7 +122,7 @@ export function ProjectDetailPage({ project }: { project?: MatchedProject }) {
         }
       />
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex gap-4">
             <RepositoryAvatar
@@ -159,7 +160,7 @@ export function ProjectDetailPage({ project }: { project?: MatchedProject }) {
             </Button>
           </div>
         </div>
-      </section>
+      </AnimatedSection>
 
       <div className="mt-5 grid gap-4 md:grid-cols-4">
         <StatCard label="Stars" value={formatNumber(project.stars)} icon={<Star size={18} />} />
