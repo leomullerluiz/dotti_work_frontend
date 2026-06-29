@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { Shine } from "@/components/animate-ui/primitives/effects/shine";
 import { cn } from "@/utils/cn";
