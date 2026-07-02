@@ -1,11 +1,16 @@
 import type { NextRequest } from "next/server";
 
-const DEFAULT_API_BASE_URL = "http://localhost/dottiwork_api/api";
+function requireEnv(value: string | undefined, name: string) {
+  if (!value?.trim()) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
 
-const API_BASE_URL = (
-  process.env.DOTTI_API_BASE_URL ??
-  process.env.NEXT_PUBLIC_DOTTI_API_BASE_URL ??
-  DEFAULT_API_BASE_URL
+  return value.trim();
+}
+
+const API_BASE_URL = requireEnv(
+  process.env.DOTTI_API_BASE_URL,
+  "DOTTI_API_BASE_URL",
 ).replace(/\/+$/, "");
 
 type RouteParams = {

@@ -1,6 +1,3 @@
-const DEFAULT_API_BASE_URL = "http://localhost/dottiwork_api/";
-const DEFAULT_API_PROXY_BASE = "/api/dotti";
-
 type ApiErrorPayload = {
   code?: string;
   message?: string;
@@ -9,13 +6,13 @@ type ApiErrorPayload = {
 
 type ApiEnvelope<T> =
   | {
-    success: true;
-    data: T;
-  }
+      success: true;
+      data: T;
+    }
   | {
-    success: false;
-    error: ApiErrorPayload;
-  };
+      success: false;
+      error: ApiErrorPayload;
+    };
 
 export class DottiApiError extends Error {
   status: number;
@@ -41,12 +38,22 @@ export class DottiApiError extends Error {
   }
 }
 
-export const DOTTI_API_BASE_URL = (
-  process.env.NEXT_PUBLIC_DOTTI_API_BASE_URL ?? DEFAULT_API_BASE_URL
+function requireEnv(value: string | undefined, name: string) {
+  if (!value?.trim()) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value.trim();
+}
+
+export const DOTTI_API_BASE_URL = requireEnv(
+  process.env.NEXT_PUBLIC_DOTTI_API_BASE_URL,
+  "NEXT_PUBLIC_DOTTI_API_BASE_URL",
 ).replace(/\/+$/, "");
 
-const API_PROXY_BASE = (
-  process.env.NEXT_PUBLIC_DOTTI_API_PROXY_BASE ?? DEFAULT_API_PROXY_BASE
+const API_PROXY_BASE = requireEnv(
+  process.env.NEXT_PUBLIC_DOTTI_API_PROXY_BASE,
+  "NEXT_PUBLIC_DOTTI_API_PROXY_BASE",
 ).replace(/\/+$/, "");
 
 function normalizePath(path: string) {
