@@ -65,6 +65,9 @@ export function LandingPage() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
+          <Link href="/login">
+            Login
+          </Link>
           <Link
             href="/onboarding"
             className={buttonClasses({ size: "sm", className: "hidden sm:inline-flex" })}

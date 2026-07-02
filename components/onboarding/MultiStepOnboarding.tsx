@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  GitBranch,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
 import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import {
   ACTIVITY_LEVELS,
@@ -14,7 +21,14 @@ import {
   PROFILE_GOALS,
   PROJECT_SIZES,
   SENIORITY_LEVELS,
+  STORAGE_KEYS,
 } from "@/data/constants";
+import { getAuthenticatedUser } from "@/services/dotti/auth";
+import {
+  buildGitHubOAuthStartUrl,
+  isUnauthorizedError,
+} from "@/services/dotti/client";
+import { submitOnboardingToApi } from "@/services/dotti/onboarding";
 import { useProfile } from "@/hooks/useProfile";
 import type {
   ActivityLevel,
@@ -56,13 +70,48 @@ type ProfileStepState = {
   goal: string;
 };
 
-export function MultiStepOnboarding() {
+type CompletionStatus = "idle" | "syncing" | "redirecting" | "done" | "error";
+
+function readPendingOnboarding() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const snapshot = window.localStorage.getItem(STORAGE_KEYS.pendingOnboarding);
+    return snapshot ? (JSON.parse(snapshot) as DeveloperProfile) : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistPendingOnboarding(profile: DeveloperProfile) {
+  window.localStorage.setItem(
+    STORAGE_KEYS.pendingOnboarding,
+    JSON.stringify(profile),
+  );
+}
+
+function clearPendingOnboarding() {
+  window.localStorage.removeItem(STORAGE_KEYS.pendingOnboarding);
+}
+
+export function MultiStepOnboarding({
+  completeAfterOAuth = false,
+}: {
+  completeAfterOAuth?: boolean;
+}) {
   const router = useRouter();
   const { profile, saveProfile } = useProfile();
   const savedOnce = useRef(false);
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const [messageIndex, setMessageIndex] = useState(0);
+  const [completionStatus, setCompletionStatus] =
+    useState<CompletionStatus>("idle");
+  const [completionDetail, setCompletionDetail] = useState(
+    "Preparing your profile and preferences...",
+  );
   const [profileState, setProfileState] = useState<ProfileStepState>({
     name: profile?.name ?? "",
     role: profile?.role ?? "",
@@ -78,13 +127,8 @@ export function MultiStepOnboarding() {
 
   const progress = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
 
-  useEffect(() => {
-    if (step !== 3 || savedOnce.current) {
-      return;
-    }
-
-    savedOnce.current = true;
-    const nextProfile: DeveloperProfile = {
+  const buildProfile = useCallback(
+    (): DeveloperProfile => ({
       name: profileState.name.trim() || undefined,
       role: profileState.role,
       seniority: profileState.seniority as SeniorityLevel,
@@ -93,9 +137,115 @@ export function MultiStepOnboarding() {
       preferences,
       completedOnboarding: true,
       updatedAt: new Date().toISOString(),
+    }),
+    [preferences, profileState, technologies],
+  );
+
+  const redirectToGitHub = useCallback(() => {
+    setCompletionStatus("redirecting");
+    setCompletionDetail("Opening GitHub to finish creating your account...");
+    window.setTimeout(() => {
+      window.location.assign(
+        buildGitHubOAuthStartUrl("/onboarding?complete=1"),
+      );
+    }, 700);
+  }, []);
+
+  const completeOnboarding = useCallback(
+    async (nextProfile: DeveloperProfile) => {
+      setError("");
+      setCompletionStatus("syncing");
+      setCompletionDetail("Saving your onboarding with the dotti.work API...");
+
+      try {
+        await getAuthenticatedUser();
+        const result = await submitOnboardingToApi(nextProfile);
+        const skippedCount = result.skippedTechnologies.length;
+        const skippedDetail =
+          skippedCount > 0
+            ? ` ${skippedCount} selected ${
+                skippedCount === 1 ? "technology was" : "technologies were"
+              } not in the API catalog.`
+            : "";
+        const reusedMatchesMessage = result.refreshSkippedReason
+          ? `Profile registered. ${result.refreshSkippedReason}${skippedDetail}`
+          : `Profile registered. Existing matches will be reused for now.${skippedDetail}`;
+
+        clearPendingOnboarding();
+        setCompletionStatus("done");
+        setCompletionDetail(
+          result.refreshStarted
+            ? `Profile registered. Your first matches are being prepared.${skippedDetail}`
+            : reusedMatchesMessage,
+        );
+
+        window.setTimeout(() => {
+          router.push("/matches");
+        }, 1000);
+      } catch (submissionError) {
+        if (isUnauthorizedError(submissionError)) {
+          persistPendingOnboarding(nextProfile);
+          redirectToGitHub();
+          return;
+        }
+
+        setCompletionStatus("error");
+        setCompletionDetail(
+          "Your local profile is saved, but the API registration did not finish.",
+        );
+        setError(
+          submissionError instanceof Error
+            ? submissionError.message
+            : "Could not finish onboarding with the API.",
+        );
+      }
+    },
+    [redirectToGitHub, router],
+  );
+
+  useEffect(() => {
+    if (!completeAfterOAuth || savedOnce.current) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const pendingProfile = readPendingOnboarding() ?? profile;
+
+      if (!pendingProfile) {
+        setCompletionStatus("error");
+        setCompletionDetail("No pending onboarding data was found in this browser.");
+        setError("Restart onboarding so we can save your profile with GitHub.");
+        return;
+      }
+
+      savedOnce.current = true;
+      setStep(3);
+      saveProfile(pendingProfile);
+      void completeOnboarding(pendingProfile);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
     };
+  }, [completeAfterOAuth, completeOnboarding, profile, saveProfile]);
+
+  useEffect(() => {
+    if (step !== 3 || savedOnce.current) {
+      return;
+    }
+
+    savedOnce.current = true;
+    const nextProfile = buildProfile();
 
     saveProfile(nextProfile);
+    persistPendingOnboarding(nextProfile);
+    void completeOnboarding(nextProfile);
+  }, [buildProfile, completeOnboarding, saveProfile, step]);
+
+  useEffect(() => {
+    if (step !== 3 || completionStatus === "done" || completionStatus === "error") {
+      return;
+    }
 
     const interval = window.setInterval(() => {
       setMessageIndex((current) =>
@@ -103,15 +253,16 @@ export function MultiStepOnboarding() {
       );
     }, 850);
 
-    const timeout = window.setTimeout(() => {
-      router.push("/matches");
-    }, 3600);
-
     return () => {
       window.clearInterval(interval);
-      window.clearTimeout(timeout);
     };
-  }, [preferences, profileState, router, saveProfile, step, technologies]);
+  }, [completionStatus, step]);
+
+  const retryCompletion = () => {
+    const pendingProfile = readPendingOnboarding() ?? profile ?? buildProfile();
+    persistPendingOnboarding(pendingProfile);
+    void completeOnboarding(pendingProfile);
+  };
 
   const validateStep = () => {
     if (step === 0) {
@@ -202,7 +353,15 @@ export function MultiStepOnboarding() {
         {step === 2 ? (
           <PreferencesStep value={preferences} onChange={setPreferences} />
         ) : null}
-        {step === 3 ? <MatchingStep message={LOADING_MESSAGES[messageIndex]} /> : null}
+        {step === 3 ? (
+          <MatchingStep
+            detail={completionDetail}
+            message={LOADING_MESSAGES[messageIndex]}
+            status={completionStatus}
+            onRetry={retryCompletion}
+            onSignIn={redirectToGitHub}
+          />
+        ) : null}
 
         {step < 3 ? (
           <footer className="flex items-center justify-between gap-3">
@@ -291,11 +450,12 @@ function ProfileStep({
       <AnimatedAside className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h3 className="font-semibold">How this will be used</h3>
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          The prototype stores this profile only in your browser and uses it to tune
-          mock recommendations, filters, saved projects, and local contribution stats.
+          Your local profile stays available in this browser and is registered
+          with the API after GitHub confirms your session.
         </p>
         <div className="mt-5 rounded-lg border border-coral-400/20 bg-coral-400/10 p-4 text-sm text-coral-800 dark:text-coral-100">
-          Future GitHub OAuth can reuse this shape to sync preferences with a real API.
+          If you are not signed in yet, the last step opens GitHub OAuth and
+          returns here to finish registration.
         </div>
       </AnimatedAside>
     </section>
@@ -423,26 +583,76 @@ function PreferencesStep({
   );
 }
 
-function MatchingStep({ message }: { message: string }) {
+function MatchingStep({
+  detail,
+  message,
+  status,
+  onRetry,
+  onSignIn,
+}: {
+  detail: string;
+  message: string;
+  status: CompletionStatus;
+  onRetry: () => void;
+  onSignIn: () => void;
+}) {
+  const title =
+    status === "redirecting"
+      ? "Connecting GitHub"
+      : status === "done"
+        ? "Onboarding registered"
+        : status === "error"
+          ? "Registration paused"
+          : "Building your matches";
+
   return (
     <AnimatedSection className="flex min-h-[480px] items-center justify-center rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div>
         <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-coral-400/10 text-coral-500">
-          <Loader2 className="animate-spin" size={30} />
+          {status === "error" ? (
+            <RotateCcw size={30} />
+          ) : status === "redirecting" ? (
+            <GitBranch size={30} />
+          ) : status === "done" ? (
+            <Check size={30} />
+          ) : (
+            <Loader2 className="animate-spin" size={30} />
+          )}
         </div>
-        <h2 className="mt-6 text-2xl font-semibold">Building your matches</h2>
-        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{message}</p>
-        <div className="mt-6 flex justify-center gap-2">
-          {LOADING_MESSAGES.map((item) => (
-            <span
-              key={item}
-              className={cn(
-                "size-2 rounded-full transition",
-                item === message ? "bg-coral-500" : "bg-zinc-300 dark:bg-white/20",
-              )}
-            />
-          ))}
-        </div>
+        <h2 className="mt-6 text-2xl font-semibold">{title}</h2>
+        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{detail}</p>
+        {status === "syncing" || status === "redirecting" || status === "idle" ? (
+          <>
+            <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+              {message}
+            </p>
+            <div className="mt-6 flex justify-center gap-2">
+              {LOADING_MESSAGES.map((item) => (
+                <span
+                  key={item}
+                  className={cn(
+                    "size-2 rounded-full transition",
+                    item === message
+                      ? "bg-coral-500"
+                      : "bg-zinc-300 dark:bg-white/20",
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
+        {status === "error" ? (
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button type="button" onClick={onRetry}>
+              <RotateCcw size={16} />
+              Try again
+            </Button>
+            <Button type="button" variant="outline" onClick={onSignIn}>
+              <GitBranch size={16} />
+              Sign in with GitHub
+            </Button>
+          </div>
+        ) : null}
       </div>
     </AnimatedSection>
   );

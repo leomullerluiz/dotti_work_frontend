@@ -14,6 +14,7 @@ export default function NotFound() {
         <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           This route is not part of the dotti.work prototype.
         </p>
+        {/* todo: caso não esteja logado, vai para a lp/home */}
         <Link href="/matches" className={buttonClasses({ className: "mt-6" })}>
           Go to matches
         </Link>

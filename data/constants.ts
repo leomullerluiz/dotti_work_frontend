@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   history: "dotti.history",
   theme: "dotti.theme",
   filters: "dotti.filters",
+  pendingOnboarding: "dotti.pendingOnboarding",
 } as const;
 
 export const PROFESSIONAL_ROLES = [

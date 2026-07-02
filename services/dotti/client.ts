@@ -1,0 +1,157 @@
+const DEFAULT_API_BASE_URL = "http://localhost/dottiwork_api/";
+const DEFAULT_API_PROXY_BASE = "/api/dotti";
+
+type ApiErrorPayload = {
+  code?: string;
+  message?: string;
+  details?: unknown;
+};
+
+type ApiEnvelope<T> =
+  | {
+    success: true;
+    data: T;
+  }
+  | {
+    success: false;
+    error: ApiErrorPayload;
+  };
+
+export class DottiApiError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+
+  constructor({
+    status,
+    code,
+    message,
+    details,
+  }: {
+    status: number;
+    code?: string;
+    message: string;
+    details?: unknown;
+  }) {
+    super(message);
+    this.name = "DottiApiError";
+    this.status = status;
+    this.code = code;
+    this.details = details;
+  }
+}
+
+export const DOTTI_API_BASE_URL = (
+  process.env.NEXT_PUBLIC_DOTTI_API_BASE_URL ?? DEFAULT_API_BASE_URL
+).replace(/\/+$/, "");
+
+const API_PROXY_BASE = (
+  process.env.NEXT_PUBLIC_DOTTI_API_PROXY_BASE ?? DEFAULT_API_PROXY_BASE
+).replace(/\/+$/, "");
+
+function normalizePath(path: string) {
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function isPlainObjectBody(body: BodyInit | object | undefined) {
+  return Boolean(
+    body &&
+    typeof body === "object" &&
+    !(body instanceof FormData) &&
+    !(body instanceof URLSearchParams) &&
+    !(body instanceof Blob) &&
+    !(body instanceof ArrayBuffer),
+  );
+}
+
+async function readJson<T>(response: Response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null as T | null;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new DottiApiError({
+      status: response.status,
+      message: "A API retornou uma resposta invalida.",
+    });
+  }
+}
+
+export async function dottiRequest<T>(
+  path: string,
+  init: Omit<RequestInit, "body"> & {
+    body?: BodyInit | object;
+  } = {},
+) {
+  const headers = new Headers(init.headers);
+  const body = isPlainObjectBody(init.body)
+    ? JSON.stringify(init.body)
+    : (init.body as BodyInit | undefined);
+
+  headers.set("accept", "application/json");
+  if (body && isPlainObjectBody(init.body) && !headers.has("content-type")) {
+    headers.set("content-type", "application/json");
+  }
+
+  const response = await fetch(`${API_PROXY_BASE}${normalizePath(path)}`, {
+    ...init,
+    body,
+    headers,
+    cache: "no-store",
+    credentials: "include",
+  });
+
+  const payload = await readJson<ApiEnvelope<T>>(response);
+
+  if (!response.ok || payload?.success === false) {
+    const error = payload && "error" in payload ? payload.error : undefined;
+
+    throw new DottiApiError({
+      status: response.status,
+      code: error?.code,
+      message: error?.message ?? "Nao foi possivel concluir a requisicao.",
+      details: error?.details,
+    });
+  }
+
+  if (!payload || !("data" in payload)) {
+    throw new DottiApiError({
+      status: response.status,
+      message: "A API nao retornou dados para esta requisicao.",
+    });
+  }
+
+  return payload.data;
+}
+
+export function isUnauthorizedError(error: unknown) {
+  return error instanceof DottiApiError && error.status === 401;
+}
+
+export function normalizeReturnTo(value: string | null | undefined, fallback = "/matches") {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+
+  const lowered = value.trim().toLowerCase();
+  if (
+    lowered.startsWith("/http:") ||
+    lowered.startsWith("/https:") ||
+    lowered.startsWith("/javascript:") ||
+    lowered.startsWith("/data:")
+  ) {
+    return fallback;
+  }
+
+  return value;
+}
+
+export function buildGitHubOAuthStartUrl(returnTo: string) {
+  const url = new URL(`${DOTTI_API_BASE_URL}/auth/github/start`);
+  url.searchParams.set("return_to", normalizeReturnTo(returnTo));
+  return url.toString();
+}
