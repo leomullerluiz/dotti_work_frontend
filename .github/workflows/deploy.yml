@@ -25,12 +25,15 @@ jobs:
         shell: bash
         run: |
           {
-            echo "NEXT_PUBLIC_DOTTI_API_BASE_URL=${{ secrets.PROD_DOTTI_API_BASE_URL }}"
             echo "NEXT_PUBLIC_DOTTI_API_PROXY_BASE=${{ vars.PROD_DOTTI_API_PROXY_BASE || '/api/dotti' }}"
             echo "DOTTI_API_BASE_URL=${{ secrets.PROD_DOTTI_API_INTERNAL_BASE_URL }}"
             echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}"
           } > .env.production
+          if grep -Eiq 'localhost|127\.0\.0\.1' .env.production; then
+            echo "::error::.env.production contains a local URL. Fix the production GitHub secrets/variables before deploying."
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci

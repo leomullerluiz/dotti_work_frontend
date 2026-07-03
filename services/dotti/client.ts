@@ -46,11 +46,6 @@ function requireEnv(value: string | undefined, name: string) {
   return value.trim();
 }
 
-export const DOTTI_API_BASE_URL = requireEnv(
-  process.env.NEXT_PUBLIC_DOTTI_API_BASE_URL,
-  "NEXT_PUBLIC_DOTTI_API_BASE_URL",
-).replace(/\/+$/, "");
-
 const API_PROXY_BASE = requireEnv(
   process.env.NEXT_PUBLIC_DOTTI_API_PROXY_BASE,
   "NEXT_PUBLIC_DOTTI_API_PROXY_BASE",
@@ -158,7 +153,15 @@ export function normalizeReturnTo(value: string | null | undefined, fallback = "
 }
 
 export function buildGitHubOAuthStartUrl(returnTo: string) {
-  const url = new URL(`${DOTTI_API_BASE_URL}/auth/github/start`);
+  const baseUrl = API_PROXY_BASE.startsWith("http")
+    ? API_PROXY_BASE
+    : `https://dotti.local${API_PROXY_BASE}`;
+  const url = new URL(`${baseUrl}/auth/github/start`);
   url.searchParams.set("return_to", normalizeReturnTo(returnTo));
-  return url.toString();
+
+  if (API_PROXY_BASE.startsWith("http")) {
+    return url.toString();
+  }
+
+  return `${url.pathname}${url.search}`;
 }
