@@ -12,6 +12,7 @@ import { mockProjects } from "@/data/repositories";
 import { cn } from "@/utils/cn";
 import { formatNumber } from "@/utils/format";
 import { SmoothAnchorLink } from "./SmoothAnchorLink";
+import { Icons } from "../ui/Icons";
 
 const technologies = [
   "React",
@@ -255,8 +256,8 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-zinc-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <StaticLogo />
           <div className="flex flex-wrap items-center gap-4">
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-coral-600">
-              <GitBranch size={15} />
+            <a href="https://github.com/leomullerluiz?tab=repositories&q=dotti+work" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-coral-600">
+              <Icons.GitHubIcon fill="#000000" />
               GitHub
             </a>
             <a href="#" className="hover:text-coral-600">
