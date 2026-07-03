@@ -1,4 +1,5 @@
-import Link from "next/link";
+/* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   CheckCircle2,
@@ -6,11 +7,9 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
-import { Logo } from "@/components/layout/Logo";
-import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
-import { Badge } from "@/components/ui/Badge";
-import { buttonClasses } from "@/components/ui/Button";
+import { buttonClasses } from "@/components/ui/buttonStyles";
 import { mockProjects } from "@/data/repositories";
+import { cn } from "@/utils/cn";
 import { formatNumber } from "@/utils/format";
 
 const technologies = [
@@ -52,7 +51,7 @@ export function LandingPage() {
   return (
     <main className="min-h-screen bg-app text-zinc-950 dark:text-white">
       <header className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <Logo />
+        <StaticLogo />
         <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400 md:flex">
           <a href="#how-it-works" className="hover:text-coral-600 dark:hover:text-white">
             How it works
@@ -65,21 +64,21 @@ export function LandingPage() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/login">
+          <a href="/login">
             Login
-          </Link>
-          <Link
+          </a>
+          <a
             href="/onboarding"
             className={buttonClasses({ size: "sm", className: "hidden sm:inline-flex" })}
           >
             Start
-          </Link>
+          </a>
         </div>
       </header>
 
       <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-8 sm:px-6 lg:grid-cols-[1fr_0.85fr] lg:px-8 lg:pb-24 lg:pt-16">
         <div>
-          <Badge tone="accent">Open source matching for developers</Badge>
+          <StaticBadge tone="accent">Open source matching for developers</StaticBadge>
           <h1 className="mt-6 max-w-4xl text-4xl font-semibold tracking-tight text-zinc-950 dark:text-white sm:text-6xl">
             Find open source projects that match your skills.
           </h1>
@@ -89,10 +88,10 @@ export function LandingPage() {
             signals.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/onboarding" className={buttonClasses({ size: "lg" })}>
+            <a href="/onboarding" className={buttonClasses({ size: "lg" })}>
               Find projects for me
               <ArrowRight size={17} />
-            </Link>
+            </a>
             <a
               href="#how-it-works"
               className={buttonClasses({ variant: "outline", size: "lg" })}
@@ -106,7 +105,7 @@ export function LandingPage() {
               ["8", "contribution types"],
               ["100%", "local data"],
             ].map(([value, label]) => (
-              <AnimatedDiv
+              <div
                 key={label}
                 className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
               >
@@ -114,12 +113,12 @@ export function LandingPage() {
                 <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                   {label}
                 </div>
-              </AnimatedDiv>
+              </div>
             ))}
           </div>
         </div>
 
-        <AnimatedDiv className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-black/30">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-black/30">
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-black/30">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -132,7 +131,7 @@ export function LandingPage() {
             </div>
             <div className="mt-4 space-y-3">
               {featured.map((project) => (
-                <AnimatedDiv
+                <div
                   key={project.id}
                   className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
                 >
@@ -143,13 +142,13 @@ export function LandingPage() {
                         {project.description}
                       </p>
                     </div>
-                    <Badge tone="success">{project.matchScore}%</Badge>
+                    <StaticBadge tone="success">{project.matchScore}%</StaticBadge>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {project.languages.slice(0, 3).map((language) => (
-                      <Badge key={language} tone="blue">
+                      <StaticBadge key={language} tone="blue">
                         {language}
-                      </Badge>
+                      </StaticBadge>
                     ))}
                   </div>
                   <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
@@ -159,11 +158,11 @@ export function LandingPage() {
                     </span>
                     <span>{project.goodFirstIssues} good first issues</span>
                   </div>
-                </AnimatedDiv>
+                </div>
               ))}
             </div>
           </div>
-        </AnimatedDiv>
+        </div>
       </section>
 
       <section
@@ -177,7 +176,7 @@ export function LandingPage() {
           />
           <div className="mt-8 grid gap-4 md:grid-cols-4">
             {steps.map(([title, description], index) => (
-              <AnimatedDiv
+              <div
                 key={title}
                 className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-zinc-950/60"
               >
@@ -188,7 +187,7 @@ export function LandingPage() {
                 <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                   {description}
                 </p>
-              </AnimatedDiv>
+              </div>
             ))}
           </div>
         </div>
@@ -201,9 +200,9 @@ export function LandingPage() {
         />
         <div className="mt-8 flex flex-wrap gap-2">
           {technologies.map((technology) => (
-            <Badge key={technology} tone="neutral" className="px-3 py-1.5">
+            <StaticBadge key={technology} tone="neutral" className="px-3 py-1.5">
               {technology}
-            </Badge>
+            </StaticBadge>
           ))}
         </div>
       </section>
@@ -219,20 +218,20 @@ export function LandingPage() {
           />
           <div className="grid gap-3 sm:grid-cols-2">
             {benefits.map((benefit) => (
-              <AnimatedDiv
+              <div
                 key={benefit}
                 className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-950/60"
               >
                 <CheckCircle2 size={18} className="text-emerald-500" />
                 <span className="text-sm font-medium">{benefit}</span>
-              </AnimatedDiv>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <AnimatedDiv className="rounded-2xl border border-zinc-200 bg-zinc-950 p-8 text-white shadow-2xl shadow-zinc-900/15 dark:border-white/10">
+        <div className="rounded-2xl border border-zinc-200 bg-zinc-950 p-8 text-white shadow-2xl shadow-zinc-900/15 dark:border-white/10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-semibold">
@@ -243,17 +242,17 @@ export function LandingPage() {
                 mock data today, ready for API-backed matching later.
               </p>
             </div>
-            <Link href="/onboarding" className={buttonClasses({ size: "lg" })}>
+            <a href="/onboarding" className={buttonClasses({ size: "lg" })}>
               Start onboarding
               <ArrowRight size={17} />
-            </Link>
+            </a>
           </div>
-        </AnimatedDiv>
+        </div>
       </section>
 
       <footer className="border-t border-zinc-200 py-8 dark:border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-zinc-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <Logo />
+          <StaticLogo />
           <div className="flex flex-wrap items-center gap-4">
             <a href="https://github.com" target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-coral-600">
               <GitBranch size={15} />
@@ -273,6 +272,64 @@ export function LandingPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+function StaticLogo() {
+  return (
+    <a href="/" className="flex items-center gap-2" aria-label="dotti.work home">
+      <img
+        src="/dotti-icon.svg"
+        alt=""
+        width={36}
+        height={36}
+        className="size-9 shrink-0 rounded-full shadow-lg shadow-coral-500/20"
+      />
+      <span className="flex h-6 items-center">
+        <img
+          src="/dotti-wordmark.svg"
+          alt="dotti.work"
+          width={94}
+          height={24}
+          className="h-6 w-auto dark:hidden"
+        />
+        <span className="hidden text-base font-semibold tracking-tight text-white dark:inline">
+          dotti<span className="text-coral-500">.</span>work
+        </span>
+      </span>
+    </a>
+  );
+}
+
+const badgeTones = {
+  neutral:
+    "border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-300",
+  accent:
+    "border-coral-400/30 bg-coral-400/10 text-coral-700 dark:text-coral-200",
+  success:
+    "border-emerald-400/30 bg-emerald-400/10 text-emerald-700 dark:text-emerald-200",
+  blue: "border-sky-400/30 bg-sky-400/10 text-sky-700 dark:text-sky-200",
+};
+
+function StaticBadge({
+  children,
+  tone = "neutral",
+  className,
+}: {
+  children: ReactNode;
+  tone?: keyof typeof badgeTones;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+        badgeTones[tone],
+        className,
+      )}
+    >
+      {children}
+    </span>
   );
 }
 

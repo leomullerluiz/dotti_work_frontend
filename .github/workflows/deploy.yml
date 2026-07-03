@@ -41,6 +41,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify standalone assets
+        shell: bash
+        run: |
+          test -f .next/standalone/server.js
+          test -d .next/static
+          test -n "$(find .next/static -type f -name '*.css' -print -quit)"
+
       - name: Prepare deploy artifact
         shell: bash
         run: |

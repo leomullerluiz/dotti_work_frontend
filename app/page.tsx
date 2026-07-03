@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "Discover open source repositories matched to your stack, seniority, and contribution goals.",
 };
 
+export const dynamic = "force-static";
+
 export default function Home() {
   return <LandingPage />;
 }
