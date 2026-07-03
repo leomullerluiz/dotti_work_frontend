@@ -21,7 +21,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.theme, "light");
+  const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.theme, "system");
   const [resolvedTheme, setResolvedTheme] =
     useState<Exclude<ThemeMode, "system">>("light");
 

@@ -11,9 +11,6 @@ export function AppHeader() {
         <div className="md:hidden">
           <Logo />
         </div>
-        <div className="hidden text-sm text-zinc-500 dark:text-zinc-400 md:block">
-          Open source matching workspace
-        </div>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
           <Link

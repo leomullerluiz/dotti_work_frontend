@@ -50,7 +50,7 @@ export type HistoryEventType =
   | "Marked as contributing"
   | "Marked as contributed";
 
-export type ThemeMode = "light" | "dark" | "system";
+export type ThemeMode = "system" | "light" | "dark";
 
 export type SortOption =
   | "Best match"

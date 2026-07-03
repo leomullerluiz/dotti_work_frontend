@@ -1,47 +1,17 @@
 @import "tailwindcss";
+@import "./theme.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #f6f6f4;
-  --foreground: #18181b;
-  --card: #ffffff;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-app: var(--background);
-  --color-card: var(--card);
-  --color-coral-50: #fff2ef;
-  --color-coral-100: #ffe1dc;
-  --color-coral-200: #ffc6bd;
-  --color-coral-300: #ffa295;
-  --color-coral-400: #ff8271;
-  --color-coral-500: #ff6f61;
-  --color-coral-600: #e34f43;
-  --color-coral-700: #bd3d33;
-  --color-coral-800: #9c352e;
-  --color-coral-900: #7f332d;
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-.dark {
-  --background: #080808;
-  --foreground: #ededed;
-  --card: #111113;
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--theme-background);
+  color: var(--theme-foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 ::selection {
-  background: #ff6f61;
-  color: white;
+  background: var(--theme-primary-500);
+  color: var(--theme-on-primary);
 }
 
 @layer components {
