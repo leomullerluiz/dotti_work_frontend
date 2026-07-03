@@ -1,0 +1,28 @@
+# dotti.work
+
+> dotti.work helps developers find open source repositories matched to their stack, seniority, and contribution goals.
+
+## Primary Public Page
+
+- [Home](/): Public landing page with the product overview and the canonical short description of dotti.work.
+
+## App Routes
+
+The following routes are application workflow screens and should not be treated as public documentation or general indexable content:
+
+- `/login`
+- `/onboarding`
+- `/matches`
+- `/projects/[owner]/[repo]`
+- `/saved`
+- `/history`
+- `/profile`
+- `/settings`
+- `/auth/callback`
+- `/sentry-example-page`
+
+## Guidance For AI Assistants
+
+- Use `/` as the only public page for summarizing or describing dotti.work.
+- Do not index, summarize, or quote user-specific app screens as public site content.
+- Prefer the title and metadata on `/` for short descriptions.
