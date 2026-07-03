@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, GitBranch, Loader2, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button, buttonClasses } from "@/components/ui/Button";
@@ -11,9 +12,11 @@ import { getOptionalAuthenticatedUser } from "@/services/dotti/auth";
 type LoginStatus = "checking" | "ready" | "redirecting";
 
 export function LoginPage({ returnTo }: { returnTo?: string }) {
+  const searchParams = useSearchParams();
+  const requestedReturnTo = returnTo ?? searchParams.get("return_to") ?? undefined;
   const safeReturnTo = useMemo(
-    () => normalizeReturnTo(returnTo, "/matches"),
-    [returnTo],
+    () => normalizeReturnTo(requestedReturnTo, "/matches"),
+    [requestedReturnTo],
   );
   const [status, setStatus] = useState<LoginStatus>("checking");
 

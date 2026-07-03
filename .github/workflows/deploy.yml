@@ -25,8 +25,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "NEXT_PUBLIC_DOTTI_API_PROXY_BASE=${{ vars.PROD_DOTTI_API_PROXY_BASE || '/api/dotti' }}"
-            echo "DOTTI_API_BASE_URL=${{ secrets.PROD_DOTTI_API_INTERNAL_BASE_URL }}"
+            echo "NEXT_PUBLIC_DOTTI_API_BASE_URL=${{ secrets.PROD_DOTTI_API_BASE_URL }}"
             echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}"
           } > .env.production
@@ -44,21 +43,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify standalone assets
+      - name: Verify static export
         shell: bash
         run: |
-          test -f .next/standalone/server.js
-          test -d .next/static
-          test -n "$(find .next/static -type f -name '*.css' -print -quit)"
+          test -f out/index.html
+          test -d out/_next
+          test -n "$(find out/_next -type f -name '*.css' -print -quit)"
 
       - name: Prepare deploy artifact
         shell: bash
         run: |
-          mkdir -p deploy/.next/static
-          cp -R .next/standalone/. deploy/
-          cp -R .next/static/. deploy/.next/static/
-          cp -R public deploy/public
-          cp .env.production deploy/.env.production
+          rm -rf deploy
+          mkdir -p deploy
+          cp -R out/. deploy/
 
       - name: Normalize FTP target directory
         shell: bash

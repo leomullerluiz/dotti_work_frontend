@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -102,6 +102,9 @@ export function MultiStepOnboarding({
   completeAfterOAuth?: boolean;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const shouldCompleteAfterOAuth =
+    completeAfterOAuth || searchParams.get("complete") === "1";
   const { profile, saveProfile } = useProfile();
   const savedOnce = useRef(false);
   const [step, setStep] = useState(0);
@@ -204,7 +207,7 @@ export function MultiStepOnboarding({
   );
 
   useEffect(() => {
-    if (!completeAfterOAuth || savedOnce.current) {
+    if (!shouldCompleteAfterOAuth || savedOnce.current) {
       return;
     }
 
@@ -227,7 +230,7 @@ export function MultiStepOnboarding({
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [completeAfterOAuth, completeOnboarding, profile, saveProfile]);
+  }, [completeOnboarding, profile, saveProfile, shouldCompleteAfterOAuth]);
 
   useEffect(() => {
     if (step !== 3 || savedOnce.current) {

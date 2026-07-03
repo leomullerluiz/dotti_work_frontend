@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, GitBranch, Loader2, XCircle } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { buttonClasses } from "@/components/ui/Button";
@@ -21,23 +21,27 @@ export function AuthCallbackPage({
   returnTo?: string;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedStatus = status ?? searchParams.get("status") ?? undefined;
+  const requestedReason = reason ?? searchParams.get("reason") ?? undefined;
+  const requestedReturnTo = returnTo ?? searchParams.get("return_to") ?? undefined;
   const safeReturnTo = useMemo(
-    () => normalizeReturnTo(returnTo, "/matches"),
-    [returnTo],
+    () => normalizeReturnTo(requestedReturnTo, "/matches"),
+    [requestedReturnTo],
   );
   const [state, setState] = useState<CallbackState>(
-    status === "success" ? "checking" : "error",
+    requestedStatus === "success" ? "checking" : "error",
   );
   const [message, setMessage] = useState(
-    status === "error"
-      ? reason || "GitHub sign-in was canceled or rejected."
-      : status === "success"
+    requestedStatus === "error"
+      ? requestedReason || "GitHub sign-in was canceled or rejected."
+      : requestedStatus === "success"
         ? "Confirming your dotti.work session..."
         : "The GitHub callback did not include a success status.",
   );
 
   useEffect(() => {
-    if (status !== "success") {
+    if (requestedStatus !== "success") {
       return;
     }
 
@@ -76,7 +80,7 @@ export function AuthCallbackPage({
     return () => {
       isMounted = false;
     };
-  }, [router, safeReturnTo, status]);
+  }, [requestedStatus, router, safeReturnTo]);
 
   const retryUrl = buildGitHubOAuthStartUrl(safeReturnTo);
 
