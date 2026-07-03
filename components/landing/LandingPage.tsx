@@ -11,6 +11,7 @@ import { buttonClasses } from "@/components/ui/buttonStyles";
 import { mockProjects } from "@/data/repositories";
 import { cn } from "@/utils/cn";
 import { formatNumber } from "@/utils/format";
+import { SmoothAnchorLink } from "./SmoothAnchorLink";
 
 const technologies = [
   "React",
@@ -53,15 +54,15 @@ export function LandingPage() {
       <header className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
         <StaticLogo />
         <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400 md:flex">
-          <a href="#how-it-works" className="hover:text-coral-600 dark:hover:text-white">
+          <SmoothAnchorLink href="#how-it-works" className="hover:text-coral-600 dark:hover:text-white">
             How it works
-          </a>
-          <a href="#technologies" className="hover:text-coral-600 dark:hover:text-white">
+          </SmoothAnchorLink>
+          <SmoothAnchorLink href="#technologies" className="hover:text-coral-600 dark:hover:text-white">
             Technologies
-          </a>
-          <a href="#benefits" className="hover:text-coral-600 dark:hover:text-white">
+          </SmoothAnchorLink>
+          <SmoothAnchorLink href="#benefits" className="hover:text-coral-600 dark:hover:text-white">
             Benefits
-          </a>
+          </SmoothAnchorLink>
         </nav>
         <div className="flex items-center gap-2">
           <a href="/login">
