@@ -260,10 +260,10 @@ export function LandingPage() {
               <Icons.GitHubIcon fill="#000000" />
               GitHub
             </a>
-            <a href="#" className="hover:text-coral-600">
+            <a href="/privacy" className="hover:text-coral-600">
               Privacy
             </a>
-            <a href="#" className="hover:text-coral-600">
+            <a href="/terms" className="hover:text-coral-600">
               Terms
             </a>
             <span className="flex items-center gap-1">
