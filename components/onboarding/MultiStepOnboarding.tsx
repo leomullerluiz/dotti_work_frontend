@@ -295,6 +295,12 @@ export function MultiStepOnboarding({
 
   const back = () => {
     setError("");
+
+    if (step === 0) {
+      router.push("/");
+      return;
+    }
+
     setStep((current) => Math.max(current - 1, 0));
   };
 
@@ -369,7 +375,6 @@ export function MultiStepOnboarding({
               type="button"
               variant="outline"
               onClick={back}
-              disabled={step === 0}
             >
               <ArrowLeft size={16} />
               Back
