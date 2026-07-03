@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, GitBranch, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileText, Loader2, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
 import { getOptionalAuthenticatedUser } from "@/services/dotti/auth";
+import { Icons } from "../ui/Icons";
 
 type LoginStatus = "checking" | "ready" | "redirecting";
 
@@ -91,7 +92,7 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
                 {status === "redirecting" || status === "checking" ? (
                   <Loader2 className="animate-spin" size={18} />
                 ) : (
-                  <GitBranch size={18} />
+                  <Icons.GitHubIcon />
                 )}
                 {status === "checking"
                   ? "Checking session"
@@ -109,25 +110,57 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <div className="flex items-start gap-4">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
-                <ShieldCheck size={22} />
+          <div className="space-y-4">
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+              <div className="flex items-start gap-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
+                  <ShieldCheck size={22} />
+                </div>
+                <div>
+                  <h2 className="font-semibold">Session handled by the API</h2>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                    After GitHub approves the OAuth flow, the backend stores the
+                    GitHub token server-side and sends this app an HttpOnly
+                    session cookie.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-semibold">Session handled by the API</h2>
-                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  After GitHub approves the OAuth flow, the backend stores the
-                  GitHub token server-side and sends this app an HttpOnly
-                  session cookie.
-                </p>
+              <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-white/10 dark:bg-black/20 dark:text-zinc-400">
+                Next destination:{" "}
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {safeReturnTo}
+                </span>
               </div>
             </div>
-            <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-white/10 dark:bg-black/20 dark:text-zinc-400">
-              Next destination:{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {safeReturnTo}
-              </span>
+
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm dark:border-white/10 dark:bg-black/20">
+              <div className="flex items-start gap-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
+                  <FileText size={21} />
+                </div>
+                <div>
+                  <h2 className="font-semibold">Before continuing</h2>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                    By continuing with GitHub, you acknowledge that dotti.work
+                    may process your GitHub profile, technical preferences, and
+                    repository activity according to the{" "}
+                    <Link
+                      href="/terms"
+                      className="font-medium text-coral-600 underline-offset-4 hover:underline dark:text-coral-300"
+                    >
+                      Terms of Use
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      className="font-medium text-coral-600 underline-offset-4 hover:underline dark:text-coral-300"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

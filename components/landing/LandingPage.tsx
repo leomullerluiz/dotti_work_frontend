@@ -11,6 +11,7 @@ import { buttonClasses } from "@/components/ui/buttonStyles";
 import { mockProjects } from "@/data/repositories";
 import { cn } from "@/utils/cn";
 import { formatNumber } from "@/utils/format";
+import { HomeDataConsentModal } from "./HomeDataConsentModal";
 import { SmoothAnchorLink } from "./SmoothAnchorLink";
 import { Icons } from "../ui/Icons";
 
@@ -273,6 +274,7 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+      <HomeDataConsentModal />
     </main>
   );
 }
