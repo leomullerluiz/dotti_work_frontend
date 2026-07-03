@@ -41,6 +41,8 @@ jobs:
         run: npm run lint
 
       - name: Build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: npm run build
 
       - name: Verify static export
