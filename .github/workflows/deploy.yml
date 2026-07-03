@@ -60,6 +60,16 @@ jobs:
           cp -R public deploy/public
           cp .env.production deploy/.env.production
 
+      - name: Normalize FTP target directory
+        shell: bash
+        run: |
+          server_dir="${{ secrets.HOSTINGER_FTP_SERVER_DIR }}"
+          if [ -z "$server_dir" ]; then
+            echo "::error::HOSTINGER_FTP_SERVER_DIR is empty."
+            exit 1
+          fi
+          echo "HOSTINGER_FTP_TARGET_DIR=${server_dir%/}/" >> "$GITHUB_ENV"
+
       - name: Upload to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -67,4 +77,4 @@ jobs:
           username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
           local-dir: deploy/
-          server-dir: ${{ secrets.HOSTINGER_FTP_SERVER_DIR }}
+          server-dir: ${{ env.HOSTINGER_FTP_TARGET_DIR }}
