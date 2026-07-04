@@ -14,10 +14,12 @@ export function IssueCard({
   issue,
   repositoryId,
   repositoryName,
+  onOpenGitHub,
 }: {
   issue: RepositoryIssue;
   repositoryId: string;
   repositoryName: string;
+  onOpenGitHub?: () => void;
 }) {
   const { addHistory } = useHistory();
 
@@ -38,14 +40,15 @@ export function IssueCard({
           href={issue.url}
           target="_blank"
           rel="noreferrer"
-          onClick={() =>
+          onClick={() => {
+            onOpenGitHub?.();
             addHistory({
               type: "Opened GitHub",
               repositoryId,
               repositoryName,
               metadata: { issueId: issue.id },
-            })
-          }
+            });
+          }}
           className={buttonClasses({ variant: "outline", size: "sm" })}
         >
           <ExternalLink size={15} />

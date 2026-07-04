@@ -12,6 +12,8 @@ import type {
   ApiActivityEventType,
   ApiHistoryEvent,
   ApiMatch,
+  ApiRepositoryDetail,
+  ApiRepositoryHealth,
   ApiRepositoryIssue,
   ApiRepositoryMatchItem,
   ApiRepositoryStateValue,
@@ -21,6 +23,7 @@ import type {
 
 type MatchedProjectOptions = {
   match?: ApiMatch | null;
+  health?: ApiRepositoryHealth | null;
   issues?: ApiRepositoryIssue[];
 };
 
@@ -106,13 +109,20 @@ export function adaptApiRepositorySummaryToMatchedProject(
     matchReasons: match?.match_reasons ?? match?.reasons ?? [],
     positives: match?.positives ?? [],
     challenges: match?.challenges ?? [],
-    healthChecklist:
-      match?.health_checklist?.map((item) => ({
-        label: item.label,
-        passed: item.passed,
-      })) ?? [],
+    healthChecklist: healthChecklist(match, options.health),
     issues: (options.issues ?? []).map(adaptApiRepositoryIssue),
   };
+}
+
+export function adaptApiRepositoryDetailToMatchedProject(
+  detail: ApiRepositoryDetail,
+  issues: ApiRepositoryIssue[] = [],
+): MatchedProject {
+  return adaptApiRepositorySummaryToMatchedProject(detail.repository, {
+    match: detail.match,
+    health: detail.health,
+    issues,
+  });
 }
 
 export function adaptApiMatchToMatchedProject(
@@ -320,6 +330,39 @@ function mapContributionType(
     return "Refactoring";
   }
   return "Feature";
+}
+
+function healthChecklist(
+  match: ApiMatch | null | undefined,
+  health: ApiRepositoryHealth | null | undefined,
+) {
+  const matchChecklist = match?.health_checklist?.map((item) => ({
+    label: item.label,
+    passed: item.passed,
+  }));
+
+  if (matchChecklist && matchChecklist.length > 0) {
+    return matchChecklist;
+  }
+
+  if (!health) {
+    return [];
+  }
+
+  return [
+    { label: "README found", passed: Boolean(health.has_readme) },
+    { label: "CONTRIBUTING.md found", passed: Boolean(health.has_contributing) },
+    {
+      label: "CODE_OF_CONDUCT.md found",
+      passed: Boolean(health.has_code_of_conduct),
+    },
+    { label: "CI/CD detected", passed: Boolean(health.has_ci) },
+    { label: "Tests detected", passed: Boolean(health.has_tests) },
+    {
+      label: "Contribution labels found",
+      passed: Boolean(health.has_contribution_labels),
+    },
+  ];
 }
 
 function avatarGradient(value: string) {

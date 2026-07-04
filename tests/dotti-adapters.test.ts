@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   adaptApiHistoryEvent,
   adaptApiMatchToMatchedProject,
+  adaptApiRepositoryDetailToMatchedProject,
   adaptApiRepositoryIssue,
   adaptApiRepositoryStates,
   adaptApiRepositorySummaryToMatchedProject,
@@ -115,6 +116,60 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     assert.deepEqual(project.matchReasons, ["Beginner-friendly labels."]);
     assert.deepEqual(project.sharedTechnologies, ["PHP"]);
     assert.equal(project.githubUrl, "https://github.com/laravel-signal/pulse-kit");
+  });
+
+  await t.test("adapts RepositoryDetail with health and API issues", () => {
+    const project = adaptApiRepositoryDetailToMatchedProject(
+      {
+        repository: {
+          github_repository_id: 42,
+          owner: "open-nova",
+          name: "nova-ui",
+          full_name: "open-nova/nova-ui",
+          health_score: 83,
+        },
+        health: {
+          score: 83,
+          has_readme: true,
+          has_contributing: false,
+          has_code_of_conduct: true,
+          has_ci: true,
+          has_tests: false,
+          has_contribution_labels: true,
+        },
+        user_state: "saved",
+        match: {
+          score: 91,
+          recommended_seniority: "senior",
+          reasons: ["Strong repository health."],
+        },
+      },
+      [
+        {
+          github_issue_id: 321,
+          title: "Add keyboard tests",
+          labels: [{ name: "tests" }],
+          difficulty: "medium",
+          contribution_type: "test",
+          confidence: 0.8,
+        },
+      ],
+    );
+
+    assert.equal(project.id, "42");
+    assert.equal(project.matchScore, 91);
+    assert.equal(project.recommendedLevel, "Senior");
+    assert.deepEqual(project.matchReasons, ["Strong repository health."]);
+    assert.deepEqual(project.healthChecklist, [
+      { label: "README found", passed: true },
+      { label: "CONTRIBUTING.md found", passed: false },
+      { label: "CODE_OF_CONDUCT.md found", passed: true },
+      { label: "CI/CD detected", passed: true },
+      { label: "Tests detected", passed: false },
+      { label: "Contribution labels found", passed: true },
+    ]);
+    assert.equal(project.issues.length, 1);
+    assert.equal(project.issues[0]?.contributionType, "Tests");
   });
 
   await t.test("adapts RepositoryIssue into issue cards", () => {

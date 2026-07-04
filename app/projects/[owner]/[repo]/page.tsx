@@ -1,6 +1,6 @@
 import { ProjectDetailPage } from "@/components/projects/ProjectDetailPage";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppProviders } from "@/contexts/AppProviders";
-import { findProject, mockProjects } from "@/data/repositories";
 
 type ProjectRouteProps = {
   params: Promise<{
@@ -10,17 +10,21 @@ type ProjectRouteProps = {
 };
 
 export function generateStaticParams() {
-  return mockProjects.map((project) => ({
-    owner: project.owner,
-    repo: project.repo,
-  }));
+  return [
+    {
+      owner: "_",
+      repo: "_",
+    },
+  ];
 }
 
 export default async function ProjectRoute({ params }: ProjectRouteProps) {
   const { owner, repo } = await params;
   return (
     <AppProviders>
-      <ProjectDetailPage project={findProject(owner, repo)} />
+      <RequireAuth>
+        <ProjectDetailPage owner={owner} repo={repo} />
+      </RequireAuth>
     </AppProviders>
   );
 }
