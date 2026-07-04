@@ -40,7 +40,8 @@ export type ProjectStatus =
   | "Working"
   | "Pull request sent"
   | "Contributed"
-  | "Archived";
+  | "Archived"
+  | "Ignored";
 
 export type HistoryEventType =
   | "Viewed project"

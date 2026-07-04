@@ -1,0 +1,370 @@
+import type {
+  ContributionType,
+  DifficultyLevel,
+  HistoryEvent,
+  HistoryEventType,
+  MatchedProject,
+  ProjectStatus,
+  RepositoryIssue,
+  SavedProject,
+} from "@/types";
+import type {
+  ApiActivityEventType,
+  ApiHistoryEvent,
+  ApiMatch,
+  ApiRepositoryIssue,
+  ApiRepositoryMatchItem,
+  ApiRepositoryStateValue,
+  ApiRepositorySummary,
+  ApiUserRepositoryState,
+} from "./types";
+
+type MatchedProjectOptions = {
+  match?: ApiMatch | null;
+  issues?: ApiRepositoryIssue[];
+};
+
+const fallbackDate = "1970-01-01";
+
+const avatarGradients = [
+  "from-coral-400 to-rose-500",
+  "from-sky-400 to-indigo-500",
+  "from-emerald-400 to-teal-500",
+  "from-amber-400 to-orange-500",
+  "from-fuchsia-400 to-pink-500",
+  "from-cyan-400 to-blue-500",
+] as const;
+
+const repositoryStateToProjectStatus: Record<
+  ApiRepositoryStateValue,
+  ProjectStatus
+> = {
+  saved: "Saved",
+  ignored: "Ignored",
+  researching: "Researching",
+  working: "Working",
+  pull_request_sent: "Pull request sent",
+  contributed: "Contributed",
+  archived: "Archived",
+};
+
+const activityEventToHistoryEvent: Record<ApiActivityEventType, HistoryEventType> = {
+  viewed_project: "Viewed project",
+  saved_project: "Saved project",
+  ignored_project: "Ignored project",
+  opened_github: "Opened GitHub",
+  started_contributing: "Marked as contributing",
+  sent_pull_request: "Marked as contributing",
+  marked_contributed: "Marked as contributed",
+  restored_project: "Saved project",
+};
+
+export function adaptApiRepositorySummaryToMatchedProject(
+  repository: ApiRepositorySummary,
+  options: MatchedProjectOptions = {},
+): MatchedProject {
+  const owner = repository.owner ?? parseOwner(repository.full_name) ?? "unknown-owner";
+  const repo =
+    repository.name ?? parseRepo(repository.full_name) ?? "unknown-repository";
+  const match = options.match;
+  const key = repository.full_name ?? `${owner}/${repo}`;
+
+  return {
+    id: repositoryId(repository),
+    owner,
+    repo,
+    name: repository.name ?? repository.full_name ?? repo,
+    description: repository.description ?? "",
+    avatarColor: avatarGradient(key),
+    stars: repository.stars ?? 0,
+    forks: repository.forks ?? 0,
+    watchers: repository.watchers ?? 0,
+    openIssues: repository.open_issues ?? 0,
+    goodFirstIssues: repository.good_first_issues ?? 0,
+    helpWantedIssues: repository.help_wanted_issues ?? 0,
+    topics: repository.topics ?? [],
+    languages: repositoryLanguages(repository),
+    size: mapProjectSize(repository.project_size),
+    activity: mapActivity(repository.activity_label),
+    healthScore: repository.health_score ?? 0,
+    activityScore: repository.activity_score ?? 0,
+    lastUpdated:
+      repository.last_updated_at ??
+      repository.updated_at ??
+      repository.last_pushed_at ??
+      fallbackDate,
+    difficulty: "Medium",
+    recommendedLevel: mapSeniority(match?.recommended_seniority),
+    license: repository.license ?? "Unknown",
+    website: repository.homepage_url ?? repository.homepage ?? undefined,
+    githubUrl:
+      repository.url ??
+      repository.html_url ??
+      `https://github.com/${owner}/${repo}`,
+    matchScore: Math.round(match?.score ?? 0),
+    sharedTechnologies: match?.shared_technologies ?? [],
+    matchReasons: match?.match_reasons ?? match?.reasons ?? [],
+    positives: match?.positives ?? [],
+    challenges: match?.challenges ?? [],
+    healthChecklist:
+      match?.health_checklist?.map((item) => ({
+        label: item.label,
+        passed: item.passed,
+      })) ?? [],
+    issues: (options.issues ?? []).map(adaptApiRepositoryIssue),
+  };
+}
+
+export function adaptApiMatchToMatchedProject(
+  item: ApiRepositoryMatchItem,
+): MatchedProject {
+  return adaptApiRepositorySummaryToMatchedProject({
+    ...item.repository,
+    github_repository_id:
+      item.repository.github_repository_id ?? item.github_repository_id,
+  }, {
+    match: mergeMatchFields(item),
+  });
+}
+
+export function adaptApiRepositoryIssue(
+  issue: ApiRepositoryIssue,
+): RepositoryIssue {
+  return {
+    id: issueId(issue),
+    title: issue.title ?? "Untitled issue",
+    labels: issue.labels?.map((label) => label.name).filter(isString) ?? [],
+    difficulty: mapIssueDifficulty(issue),
+    comments: issue.comments ?? 0,
+    createdAt:
+      issue.created_at ??
+      issue.updated_at ??
+      issue.fetched_at ??
+      issue.created_cache_at ??
+      fallbackDate,
+    matchScore: Math.round((issue.confidence ?? 0) * 100),
+    contributionType: mapContributionType(issue.contribution_type),
+    url: issue.url ?? "",
+  };
+}
+
+export function adaptApiUserRepositoryState(
+  state: ApiUserRepositoryState,
+): SavedProject {
+  const updatedAt = state.updated_at ?? state.created_at ?? fallbackDate;
+
+  return {
+    repositoryId: String(state.github_repository_id),
+    status: repositoryStateToProjectStatus[state.state],
+    savedAt:
+      state.saved_at ??
+      state.ignored_at ??
+      state.contributed_at ??
+      state.created_at ??
+      updatedAt,
+    updatedAt,
+  };
+}
+
+export function adaptApiHistoryEvent(event: ApiHistoryEvent): HistoryEvent {
+  const eventType = event.event_type ?? event.type;
+  const repositoryName =
+    event.repository?.full_name ??
+    joinRepositoryName(event.repository?.owner, event.repository?.name);
+
+  return {
+    id: String(event.id ?? `${eventType ?? "event"}-${event.created_at ?? fallbackDate}`),
+    type: eventType
+      ? activityEventToHistoryEvent[eventType]
+      : "Viewed project",
+    repositoryId:
+      event.github_repository_id !== null && event.github_repository_id !== undefined
+        ? String(event.github_repository_id)
+        : event.repository
+          ? repositoryId(event.repository)
+          : undefined,
+    repositoryName,
+    createdAt: event.created_at ?? fallbackDate,
+    metadata: sanitizeMetadata(event.metadata),
+  };
+}
+
+export function adaptApiRepositoryStates(
+  states: ApiUserRepositoryState[],
+): SavedProject[] {
+  return states.map(adaptApiUserRepositoryState);
+}
+
+export function adaptApiHistoryEvents(events: ApiHistoryEvent[]): HistoryEvent[] {
+  return events.map(adaptApiHistoryEvent);
+}
+
+export function apiRepositoryStateToProjectStatus(
+  state: ApiRepositoryStateValue,
+): ProjectStatus {
+  return repositoryStateToProjectStatus[state];
+}
+
+function mergeMatchFields(item: ApiRepositoryMatchItem): ApiMatch {
+  return {
+    ...item.match,
+    github_repository_id:
+      item.match.github_repository_id ?? item.github_repository_id,
+    score: item.match.score ?? item.score,
+    recommended_seniority:
+      item.match.recommended_seniority ?? item.recommended_seniority,
+    match_reasons: item.match.match_reasons ?? item.match_reasons,
+    shared_technologies:
+      item.match.shared_technologies ?? item.shared_technologies,
+    positives: item.match.positives ?? item.positives,
+    challenges: item.match.challenges ?? item.challenges,
+    health_checklist: item.match.health_checklist ?? item.health_checklist,
+    generated_at: item.match.generated_at ?? item.generated_at,
+    expires_at: item.match.expires_at ?? item.expires_at,
+    cached: item.match.cached ?? item.cached,
+  };
+}
+
+function repositoryId(repository: ApiRepositorySummary) {
+  return String(
+    repository.github_repository_id ??
+      repository.full_name ??
+      joinRepositoryName(repository.owner, repository.name) ??
+      repository.name ??
+      "unknown-repository",
+  );
+}
+
+function issueId(issue: ApiRepositoryIssue) {
+  return String(
+    issue.github_issue_id ??
+      issue.number ??
+      issue.issue_number ??
+      `${issue.github_repository_id ?? "repository"}-${issue.title ?? "issue"}`,
+  );
+}
+
+function repositoryLanguages(repository: ApiRepositorySummary) {
+  return unique([
+    ...(repository.primary_language ? [repository.primary_language] : []),
+    ...(repository.languages ?? []),
+  ]);
+}
+
+function mapProjectSize(value: ApiRepositorySummary["project_size"]) {
+  if (value === "small") {
+    return "Small";
+  }
+  if (value === "large") {
+    return "Large";
+  }
+  return "Medium";
+}
+
+function mapActivity(value: ApiRepositorySummary["activity_label"]) {
+  if (value === "low") {
+    return "Low";
+  }
+  if (value === "active") {
+    return "High";
+  }
+  if (value === "very_active") {
+    return "Very active";
+  }
+  return "Moderate";
+}
+
+function mapSeniority(value: ApiMatch["recommended_seniority"]) {
+  if (value === "junior") {
+    return "Junior";
+  }
+  if (value === "senior") {
+    return "Senior";
+  }
+  return "Mid-Level";
+}
+
+function mapIssueDifficulty(issue: ApiRepositoryIssue): DifficultyLevel {
+  if (issue.difficulty === "easy") {
+    return "Easy";
+  }
+  if (issue.difficulty === "hard") {
+    return "Hard";
+  }
+  if (issue.difficulty === "medium") {
+    return "Medium";
+  }
+
+  if (issue.difficulty_estimation?.level === "beginner") {
+    return "Beginner";
+  }
+  if (issue.difficulty_estimation?.level === "advanced") {
+    return "Hard";
+  }
+  return "Medium";
+}
+
+function mapContributionType(
+  value: ApiRepositoryIssue["contribution_type"],
+): ContributionType {
+  if (value === "bugfix") {
+    return "Bug fix";
+  }
+  if (value === "documentation") {
+    return "Documentation";
+  }
+  if (value === "test") {
+    return "Tests";
+  }
+  if (value === "refactor") {
+    return "Refactoring";
+  }
+  return "Feature";
+}
+
+function avatarGradient(value: string) {
+  const hash = Array.from(value).reduce(
+    (current, char) => current + char.charCodeAt(0),
+    0,
+  );
+  return avatarGradients[hash % avatarGradients.length];
+}
+
+function parseOwner(fullName: string | null | undefined) {
+  return fullName?.split("/")[0] || null;
+}
+
+function parseRepo(fullName: string | null | undefined) {
+  return fullName?.split("/")[1] || null;
+}
+
+function joinRepositoryName(
+  owner: string | null | undefined,
+  repo: string | null | undefined,
+) {
+  if (!owner || !repo) {
+    return undefined;
+  }
+  return `${owner}/${repo}`;
+}
+
+function unique(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function sanitizeMetadata(metadata: ApiHistoryEvent["metadata"]) {
+  if (!metadata) {
+    return undefined;
+  }
+
+  const entries = Object.entries(metadata).filter(
+    (entry): entry is [string, string | number | boolean] =>
+      ["string", "number", "boolean"].includes(typeof entry[1]),
+  );
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function isString(value: string | undefined): value is string {
+  return Boolean(value);
+}

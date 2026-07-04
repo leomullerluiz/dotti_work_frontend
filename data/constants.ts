@@ -84,6 +84,7 @@ export const PROJECT_STATUSES: ProjectStatus[] = [
   "Pull request sent",
   "Contributed",
   "Archived",
+  "Ignored",
 ];
 
 export const SORT_OPTIONS: SortOption[] = [

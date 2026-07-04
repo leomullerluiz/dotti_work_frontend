@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedDetails, AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { StatCard } from "@/components/ui/StatCard";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
@@ -14,8 +15,16 @@ import { ProjectFilters } from "./ProjectFilters";
 import { ProjectGrid } from "./ProjectGrid";
 
 export function MatchesPage() {
-  const { projects, filters, isRefreshing, refreshMatches, ignoredProjectIds } =
-    useMatches();
+  const {
+    projects,
+    filters,
+    isLoading,
+    isRefreshing,
+    error,
+    refreshMatches,
+    retryMatches,
+    ignoredProjectIds,
+  } = useMatches();
   const { profile } = useProfile();
 
   return (
@@ -26,7 +35,12 @@ export function MatchesPage() {
         description={`${projects.length} repositories match your current filters and local preferences.`}
         actions={
           <>
-            <Button type="button" variant="outline" onClick={refreshMatches}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={refreshMatches}
+              disabled={isLoading || isRefreshing}
+            >
               <RefreshCcw size={16} className={isRefreshing ? "animate-spin" : ""} />
               Refresh matches
             </Button>
@@ -54,7 +68,19 @@ export function MatchesPage() {
           </div>
         </div>
 
-        <ProjectGrid projects={projects} isLoading={isRefreshing} />
+        {error ? (
+          <EmptyState
+            title="Could not load matches"
+            description={error}
+            action={
+              <Button type="button" onClick={retryMatches}>
+                Retry
+              </Button>
+            }
+          />
+        ) : (
+          <ProjectGrid projects={projects} isLoading={isLoading || isRefreshing} />
+        )}
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
           <StatCard

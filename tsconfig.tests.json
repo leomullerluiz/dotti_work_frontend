@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".tmp/service-tests",
+    "rootDir": ".",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "incremental": false,
+    "tsBuildInfoFile": ".tmp/service-tests.tsbuildinfo"
+  },
+  "include": ["tests/**/*.ts", "services/**/*.ts", "types/**/*.ts"]
+}

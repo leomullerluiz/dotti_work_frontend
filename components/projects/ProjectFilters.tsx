@@ -9,7 +9,6 @@ import {
   DIFFICULTY_LEVELS,
   SORT_OPTIONS,
 } from "@/data/constants";
-import { mockProjects } from "@/data/repositories";
 import { useMatches } from "@/hooks/useMatches";
 import type { ActivityLevel, DifficultyLevel, ProjectSize } from "@/types";
 import { SearchInput } from "../ui/SearchInput";
@@ -17,12 +16,10 @@ import { SearchInput } from "../ui/SearchInput";
 const projectSizes: Array<"All" | ProjectSize> = ["All", "Small", "Medium", "Large"];
 const activities: Array<"All" | ActivityLevel> = ["All", ...ACTIVITY_LEVELS];
 const difficulties: Array<"All" | DifficultyLevel> = ["All", ...DIFFICULTY_LEVELS];
-const languages = Array.from(
-  new Set(mockProjects.flatMap((project) => project.languages)),
-).sort();
 
 export function ProjectFilters() {
-  const { filters, setFilters, resetFilters } = useMatches();
+  const { availableLanguages, filters, setFilters, resetFilters } = useMatches();
+  const languages = availableLanguages;
 
   return (
     <AnimatedAside className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">

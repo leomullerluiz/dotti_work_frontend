@@ -4,25 +4,39 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { DEFAULT_FILTERS, STORAGE_KEYS } from "@/data/constants";
-import { mockProjects } from "@/data/repositories";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import {
+  adaptApiMatchToMatchedProject,
+} from "@/services/dotti/adapters";
+import { DottiApiError } from "@/services/dotti/client";
+import { matchFiltersToApiParams } from "@/services/dotti/matchFilters";
+import {
+  listMatches,
+  refreshMatches as refreshMatchesFromApi,
+} from "@/services/dotti/matches";
 import type { MatchedProject, TechnologyFilter } from "@/types";
+import { useAuth } from "./AuthContext";
 import { useHistory } from "./HistoryContext";
 import { useToast } from "./ToastContext";
 
 type MatchesContextValue = {
   filters: TechnologyFilter;
   projects: MatchedProject[];
+  availableLanguages: string[];
   ignoredProjectIds: string[];
+  isLoading: boolean;
   isRefreshing: boolean;
+  error: string | null;
   setFilters: (filters: TechnologyFilter) => void;
   resetFilters: () => void;
   refreshMatches: () => void;
+  retryMatches: () => void;
   ignoreProject: (repositoryId: string) => void;
   undoIgnore: (repositoryId: string) => void;
   clearIgnored: () => void;
@@ -113,6 +127,30 @@ function filterProjects(
   });
 }
 
+function messageForMatchesError(error: unknown) {
+  if (error instanceof DottiApiError) {
+    if (error.status === 429) {
+      return "Match refresh is temporarily rate limited. Try again in a few minutes.";
+    }
+
+    if (error.status === 502 || error.status === 503) {
+      return "GitHub or the matching API is temporarily unavailable. Please retry shortly.";
+    }
+
+    return error.message;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "Could not load matches from the API.";
+}
+
+function uniqueLanguages(projects: MatchedProject[]) {
+  return Array.from(
+    new Set(projects.flatMap((project) => project.languages)),
+  ).sort();
+}
+
 export function MatchesProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useLocalStorage<TechnologyFilter>(
     STORAGE_KEYS.filters,
@@ -122,13 +160,90 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     STORAGE_KEYS.ignoredProjects,
     [],
   );
+  const [apiProjects, setApiProjects] = useState<MatchedProject[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { status } = useAuth();
   const { addHistory } = useHistory();
   const { showToast } = useToast();
 
+  const loadMatches = useCallback(async () => {
+    if (status !== "authenticated") {
+      setApiProjects([]);
+      setError(null);
+      setHasLoaded(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await listMatches(matchFiltersToApiParams(filters));
+      setApiProjects(response.items.map(adaptApiMatchToMatchedProject));
+      setHasLoaded(true);
+    } catch (loadError) {
+      setApiProjects([]);
+      setError(messageForMatchesError(loadError));
+      setHasLoaded(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, status]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function run() {
+      if (status !== "authenticated") {
+        setApiProjects([]);
+        setError(null);
+        setIsLoading(false);
+        setHasLoaded(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await listMatches(matchFiltersToApiParams(filters));
+        if (!isCurrent) {
+          return;
+        }
+        setApiProjects(response.items.map(adaptApiMatchToMatchedProject));
+        setHasLoaded(true);
+      } catch (loadError) {
+        if (!isCurrent) {
+          return;
+        }
+        setApiProjects([]);
+        setError(messageForMatchesError(loadError));
+        setHasLoaded(true);
+      } finally {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [filters, status]);
+
   const projects = useMemo(
-    () => filterProjects(mockProjects, filters, ignoredProjectIds),
-    [filters, ignoredProjectIds],
+    () => filterProjects(apiProjects, filters, ignoredProjectIds),
+    [apiProjects, filters, ignoredProjectIds],
+  );
+
+  const availableLanguages = useMemo(
+    () => uniqueLanguages(apiProjects),
+    [apiProjects],
   );
 
   const resetFilters = useCallback(() => {
@@ -137,16 +252,29 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
   }, [setFilters, showToast]);
 
   const refreshMatches = useCallback(() => {
-    setIsRefreshing(true);
-    window.setTimeout(() => {
-      setIsRefreshing(false);
-      showToast("Matches refreshed");
-    }, 900);
+    async function run() {
+      setIsRefreshing(true);
+      setError(null);
+
+      try {
+        const response = await refreshMatchesFromApi();
+        setApiProjects(response.items.map(adaptApiMatchToMatchedProject));
+        showToast("Matches refreshed");
+      } catch (refreshError) {
+        const message = messageForMatchesError(refreshError);
+        setError(message);
+        showToast(message, "error");
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+
+    void run();
   }, [showToast]);
 
   const ignoreProject = useCallback(
     (repositoryId: string) => {
-      const project = mockProjects.find((item) => item.id === repositoryId);
+      const project = apiProjects.find((item) => item.id === repositoryId);
       setIgnoredProjectIds((current) =>
         current.includes(repositoryId) ? current : [repositoryId, ...current],
       );
@@ -160,7 +288,7 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
       }
       showToast("Project ignored", "info");
     },
-    [addHistory, setIgnoredProjectIds, showToast],
+    [addHistory, apiProjects, setIgnoredProjectIds, showToast],
   );
 
   const undoIgnore = useCallback(
@@ -180,35 +308,45 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
 
   const getProjectById = useCallback(
     (repositoryId: string) =>
-      mockProjects.find((project) => project.id === repositoryId),
-    [],
+      apiProjects.find((project) => project.id === repositoryId),
+    [apiProjects],
   );
 
   const value = useMemo(
     () => ({
       filters,
       projects,
+      availableLanguages,
       ignoredProjectIds,
+      isLoading: isLoading || (status === "authenticated" && !hasLoaded),
       isRefreshing,
+      error,
       setFilters,
       resetFilters,
       refreshMatches,
+      retryMatches: loadMatches,
       ignoreProject,
       undoIgnore,
       clearIgnored,
       getProjectById,
     }),
     [
+      availableLanguages,
       clearIgnored,
+      error,
       filters,
       getProjectById,
+      hasLoaded,
       ignoredProjectIds,
       ignoreProject,
+      isLoading,
       isRefreshing,
+      loadMatches,
       projects,
       refreshMatches,
       resetFilters,
       setFilters,
+      status,
       undoIgnore,
     ],
   );
