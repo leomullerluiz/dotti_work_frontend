@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     "Find open source projects that match your stack, seniority, and contribution goals.",
   icons: {
-    icon: "/dotti-icon.svg",
+    icon: [{ url: "/dotti-icon.svg", type: "image/svg+xml", sizes: "any" }],
   },
 };
 

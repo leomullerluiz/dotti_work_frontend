@@ -6,7 +6,7 @@ import {
   LegalSection,
 } from "@/components/legal/LegalDocument";
 
-const contactEmail = "privacidade@dotti.work";
+const contactEmail = "privacidade@dottiwork.com";
 
 const pt = {
   title: "Termos de Uso",
