@@ -95,12 +95,9 @@ export function LandingPage() {
               Find projects for me
               <ArrowRight size={17} />
             </a>
-            <a
-              href="#how-it-works"
-              className={buttonClasses({ variant: "outline", size: "lg" })}
-            >
+            <SmoothAnchorLink href="#how-it-works" className={buttonClasses({ variant: "outline", size: "lg" })}>
               How it works
-            </a>
+            </SmoothAnchorLink>
           </div>
           <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
             {[

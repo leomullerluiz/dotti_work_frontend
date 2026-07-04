@@ -20,10 +20,18 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function getInitialResolvedTheme(): Exclude<ThemeMode, "system"> {
+  if (typeof document !== "undefined") {
+    return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  }
+
+  return "light";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useLocalStorage<ThemeMode>(STORAGE_KEYS.theme, "system");
   const [resolvedTheme, setResolvedTheme] =
-    useState<Exclude<ThemeMode, "system">>("light");
+    useState<Exclude<ThemeMode, "system">>(getInitialResolvedTheme);
 
   useEffect(() => {
     const root = document.documentElement;
