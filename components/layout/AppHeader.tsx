@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "./Logo";
@@ -24,6 +25,7 @@ export function AppHeader() {
             <RotateCcw size={15} />
             Redo onboarding
           </Link>
+          <LogoutButton />
         </div>
       </div>
     </header>

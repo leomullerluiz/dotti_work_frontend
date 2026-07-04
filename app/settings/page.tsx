@@ -1,10 +1,13 @@
 import { SettingsPage } from "@/components/settings/SettingsPage";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppProviders } from "@/contexts/AppProviders";
 
 export default function SettingsRoute() {
   return (
     <AppProviders>
-      <SettingsPage />
+      <RequireAuth>
+        <SettingsPage />
+      </RequireAuth>
     </AppProviders>
   );
 }

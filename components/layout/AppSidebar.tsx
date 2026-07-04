@@ -10,6 +10,7 @@ import {
   Settings,
   UserRound,
 } from "lucide-react";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { buttonClasses } from "@/components/ui/Button";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { cn } from "@/utils/cn";
@@ -72,6 +73,7 @@ export function AppSidebar() {
           <RotateCcw size={16} />
           Redo onboarding
         </Link>
+        <LogoutButton className="w-full" />
       </div>
     </aside>
   );

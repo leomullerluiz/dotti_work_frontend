@@ -7,10 +7,8 @@ import { ArrowRight, FileText, Loader2, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
-import { getOptionalAuthenticatedUser } from "@/services/dotti/auth";
+import { useAuth } from "@/hooks/useAuth";
 import { Icons } from "../ui/Icons";
-
-type LoginStatus = "checking" | "ready" | "redirecting";
 
 export function LoginPage({ returnTo }: { returnTo?: string }) {
   const searchParams = useSearchParams();
@@ -19,43 +17,26 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
     () => normalizeReturnTo(requestedReturnTo, "/matches"),
     [requestedReturnTo],
   );
-  const [status, setStatus] = useState<LoginStatus>("checking");
+  const { session, status } = useAuth();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    if (status !== "authenticated" || !session) {
+      return;
+    }
 
-    getOptionalAuthenticatedUser()
-      .then((session) => {
-        if (!isMounted) {
-          return;
-        }
-
-        if (!session) {
-          setStatus("ready");
-          return;
-        }
-
-        window.location.replace(
-          session.profile.onboarding_completed
-            ? safeReturnTo
-            : "/onboarding",
-        );
-      })
-      .catch(() => {
-        if (isMounted) {
-          setStatus("ready");
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [safeReturnTo]);
+    window.location.replace(
+      session.profile.onboarding_completed ? safeReturnTo : "/onboarding",
+    );
+  }, [safeReturnTo, session, status]);
 
   const startGitHubLogin = () => {
-    setStatus("redirecting");
+    setIsRedirecting(true);
     window.location.assign(buildGitHubOAuthStartUrl(safeReturnTo));
   };
+
+  const isChecking = status === "checking" || status === "authenticated";
+  const isBusy = isChecking || isRedirecting;
 
   return (
     <main className="min-h-screen bg-app px-4 py-6 text-zinc-950 dark:text-white sm:px-6">
@@ -87,16 +68,16 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
                 type="button"
                 size="lg"
                 onClick={startGitHubLogin}
-                disabled={status !== "ready"}
+                disabled={isBusy}
               >
-                {status === "redirecting" || status === "checking" ? (
+                {isBusy ? (
                   <Loader2 className="animate-spin" size={18} />
                 ) : (
                   <Icons.GitHubIcon />
                 )}
-                {status === "checking"
+                {isChecking
                   ? "Checking session"
-                  : status === "redirecting"
+                  : isRedirecting
                     ? "Opening GitHub"
                     : "Continue with GitHub"}
               </Button>

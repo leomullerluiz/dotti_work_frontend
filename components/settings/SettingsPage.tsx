@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { GitBranch, Trash2, Upload } from "lucide-react";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
@@ -12,6 +13,7 @@ import { ExportImportDataDialog } from "@/components/ui/ExportImportDataDialog";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { STORAGE_KEYS } from "@/data/constants";
 import { useHistory } from "@/hooks/useHistory";
+import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
@@ -21,6 +23,7 @@ import { downloadJson } from "@/utils/format";
 import { useToast } from "@/contexts/ToastContext";
 
 export function SettingsPage() {
+  const { session } = useAuth();
   const { profile, resetProfile } = useProfile();
   const { savedProjects, clearSaved } = useSavedProjects();
   const { history, clearHistory } = useHistory();
@@ -29,6 +32,8 @@ export function SettingsPage() {
   const { showToast } = useToast();
   const [dataDialogOpen, setDataDialogOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const githubLogin = session?.github.login ?? session?.user.login;
+  const displayName = session?.user.display_name ?? githubLogin ?? "GitHub user";
 
   const snapshot = useMemo<LocalAppData>(
     () => ({
@@ -77,7 +82,7 @@ export function SettingsPage() {
       <PageHeader
         eyebrow="Settings"
         title="Application settings"
-        description="Manage appearance, local data, and future GitHub connection preferences."
+        description="Manage appearance, local data, GitHub session, and account preferences."
       />
 
       <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
@@ -100,16 +105,29 @@ export function SettingsPage() {
                 GitHub
               </h2>
               <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                GitHub OAuth and API-backed recommendations are planned for a future
-                integration. This prototype uses mocks only.
+                GitHub OAuth is active. The API keeps the OAuth token server-side
+                and this app uses the authenticated session for profile,
+                onboarding, and recommendation flows.
               </p>
             </div>
-            <Badge tone="warning">Coming soon</Badge>
+            <Badge tone={session?.github.connected ? "success" : "warning"}>
+              {session?.github.connected ? "Connected" : "Session active"}
+            </Badge>
           </div>
-          <Button type="button" variant="outline" className="mt-5" disabled>
-            <GitBranch size={16} />
-            Connect GitHub
-          </Button>
+          <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-white/10 dark:bg-black/20 dark:text-zinc-400">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
+                <GitBranch size={17} />
+              </div>
+              <div>
+                <p className="font-medium text-zinc-950 dark:text-white">
+                  {displayName}
+                </p>
+                <p>{githubLogin ? `@${githubLogin}` : "Authenticated by GitHub OAuth"}</p>
+              </div>
+            </div>
+          </div>
+          <LogoutButton className="mt-5" label="Sign out from this session" />
         </AnimatedSection>
       </div>
 

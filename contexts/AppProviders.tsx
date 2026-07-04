@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AuthProvider } from "./AuthContext";
 import { HistoryProvider } from "./HistoryContext";
 import { MatchesProvider } from "./MatchesContext";
 import { ProfileProvider } from "./ProfileContext";
@@ -12,13 +13,15 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <HistoryProvider>
-          <ProfileProvider>
-            <SavedProjectsProvider>
-              <MatchesProvider>{children}</MatchesProvider>
-            </SavedProjectsProvider>
-          </ProfileProvider>
-        </HistoryProvider>
+        <AuthProvider>
+          <HistoryProvider>
+            <ProfileProvider>
+              <SavedProjectsProvider>
+                <MatchesProvider>{children}</MatchesProvider>
+              </SavedProjectsProvider>
+            </ProfileProvider>
+          </HistoryProvider>
+        </AuthProvider>
       </ToastProvider>
     </ThemeProvider>
   );

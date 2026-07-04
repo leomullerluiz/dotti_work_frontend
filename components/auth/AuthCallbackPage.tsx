@@ -7,7 +7,7 @@ import { CheckCircle2, GitBranch, Loader2, XCircle } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
-import { getAuthenticatedUser } from "@/services/dotti/auth";
+import { useAuth } from "@/hooks/useAuth";
 
 type CallbackState = "checking" | "success" | "error";
 
@@ -22,6 +22,7 @@ export function AuthCallbackPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshSession } = useAuth();
   const requestedStatus = status ?? searchParams.get("status") ?? undefined;
   const requestedReason = reason ?? searchParams.get("reason") ?? undefined;
   const requestedReturnTo = returnTo ?? searchParams.get("return_to") ?? undefined;
@@ -47,10 +48,14 @@ export function AuthCallbackPage({
 
     let isMounted = true;
 
-    getAuthenticatedUser()
+    refreshSession()
       .then((session) => {
         if (!isMounted) {
           return;
+        }
+
+        if (!session) {
+          throw new Error("Session not found after GitHub returned.");
         }
 
         setState("success");
@@ -80,7 +85,7 @@ export function AuthCallbackPage({
     return () => {
       isMounted = false;
     };
-  }, [requestedStatus, router, safeReturnTo]);
+  }, [refreshSession, requestedStatus, router, safeReturnTo]);
 
   const retryUrl = buildGitHubOAuthStartUrl(safeReturnTo);
 
