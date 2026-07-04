@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:services": "node -e \"require('fs').rmSync('.tmp/service-tests',{recursive:true,force:true})\" && tsc --outDir .tmp/service-tests --rootDir . --module commonjs --moduleResolution node --target ES2022 --lib ES2022,DOM --types node --esModuleInterop --skipLibCheck --strict tests/dotti-services.test.ts && node --test .tmp/service-tests/tests/dotti-services.test.js"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.62.0",
