@@ -357,10 +357,11 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
         updated_at: null,
       },
     });
-    await githubIntegration.syncGitHubIntegration();
+    const synced = await githubIntegration.syncGitHubIntegration();
 
     assert.equal(lastUrl().pathname, "/api/integrations/github/sync");
     assert.equal(lastRequest().init?.method, "POST");
+    assert.equal(synced.user.display_name, "Octo Cat");
 
     resetFetchMock();
     enqueueData({ connected: false });

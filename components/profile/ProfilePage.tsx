@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Download, RotateCcw, Upload } from "lucide-react";
+import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
@@ -142,6 +143,8 @@ export function ProfilePage() {
         <StatCard label="In progress" value={stats.working} />
         <StatCard label="Completed" value={stats.contributed} />
       </div>
+
+      <GitHubIntegrationCard className="mt-5" returnTo="/profile" />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1fr]">
         <AnimatedSection className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
