@@ -21,13 +21,17 @@ import {
   PROFILE_GOALS,
   PROJECT_SIZES,
   SENIORITY_LEVELS,
-  STORAGE_KEYS,
 } from "@/data/constants";
 import { getAuthenticatedUser } from "@/services/dotti/auth";
 import {
   buildGitHubOAuthStartUrl,
   isUnauthorizedError,
 } from "@/services/dotti/client";
+import {
+  clearPendingOnboarding,
+  persistPendingOnboarding,
+  readPendingOnboarding,
+} from "@/services/dotti/localStorageStrategy";
 import { submitOnboardingToApi } from "@/services/dotti/onboarding";
 import { useProfile } from "@/hooks/useProfile";
 import type {
@@ -71,30 +75,6 @@ type ProfileStepState = {
 };
 
 type CompletionStatus = "idle" | "syncing" | "redirecting" | "done" | "error";
-
-function readPendingOnboarding() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const snapshot = window.localStorage.getItem(STORAGE_KEYS.pendingOnboarding);
-    return snapshot ? (JSON.parse(snapshot) as DeveloperProfile) : null;
-  } catch {
-    return null;
-  }
-}
-
-function persistPendingOnboarding(profile: DeveloperProfile) {
-  window.localStorage.setItem(
-    STORAGE_KEYS.pendingOnboarding,
-    JSON.stringify(profile),
-  );
-}
-
-function clearPendingOnboarding() {
-  window.localStorage.removeItem(STORAGE_KEYS.pendingOnboarding);
-}
 
 export function MultiStepOnboarding({
   completeAfterOAuth = false,
@@ -174,7 +154,7 @@ export function MultiStepOnboarding({
           ? `Profile registered. ${result.refreshSkippedReason}${skippedDetail}`
           : `Profile registered. Existing matches will be reused for now.${skippedDetail}`;
 
-        clearPendingOnboarding();
+        clearPendingOnboarding(window.localStorage);
         setCompletionStatus("done");
         setCompletionDetail(
           result.refreshStarted
@@ -187,11 +167,12 @@ export function MultiStepOnboarding({
         }, 1000);
       } catch (submissionError) {
         if (isUnauthorizedError(submissionError)) {
-          persistPendingOnboarding(nextProfile);
+          persistPendingOnboarding(window.localStorage, nextProfile);
           redirectToGitHub();
           return;
         }
 
+        clearPendingOnboarding(window.localStorage);
         setCompletionStatus("error");
         setCompletionDetail(
           "Your local profile is saved, but the API registration did not finish.",
@@ -212,7 +193,8 @@ export function MultiStepOnboarding({
     }
 
     const timeout = window.setTimeout(() => {
-      const pendingProfile = readPendingOnboarding() ?? profile;
+      const pendingProfile =
+        readPendingOnboarding(window.localStorage) ?? profile;
 
       if (!pendingProfile) {
         setCompletionStatus("error");
@@ -241,7 +223,7 @@ export function MultiStepOnboarding({
     const nextProfile = buildProfile();
 
     void saveProfile(nextProfile).catch(() => undefined);
-    persistPendingOnboarding(nextProfile);
+    persistPendingOnboarding(window.localStorage, nextProfile);
     void completeOnboarding(nextProfile);
   }, [buildProfile, completeOnboarding, saveProfile, step]);
 
@@ -262,8 +244,9 @@ export function MultiStepOnboarding({
   }, [completionStatus, step]);
 
   const retryCompletion = () => {
-    const pendingProfile = readPendingOnboarding() ?? profile ?? buildProfile();
-    persistPendingOnboarding(pendingProfile);
+    const pendingProfile =
+      readPendingOnboarding(window.localStorage) ?? profile ?? buildProfile();
+    persistPendingOnboarding(window.localStorage, pendingProfile);
     void completeOnboarding(pendingProfile);
   };
 

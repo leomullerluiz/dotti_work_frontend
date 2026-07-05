@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from "@/data/constants";
+import { STORAGE_KEYS } from "../../data/constants";
 import {
   CONSENT_POLICY_VERSION,
   OPTIONAL_CONSENT_TYPES,

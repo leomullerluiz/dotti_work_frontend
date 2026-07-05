@@ -16,6 +16,7 @@ import {
   type AuthMeData,
 } from "@/services/dotti/auth";
 import { isUnauthorizedError } from "@/services/dotti/client";
+import { clearPendingOnboarding } from "@/services/dotti/localStorageStrategy";
 
 export type AuthStatus =
   | "checking"
@@ -39,6 +40,14 @@ function messageForError(error: unknown) {
   return error instanceof Error
     ? error.message
     : "Could not verify the current session.";
+}
+
+function clearLogoutLocalState() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  clearPendingOnboarding(window.localStorage);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -66,11 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await logoutCurrentSession();
+      clearLogoutLocalState();
       setSession(null);
       setStatus("unauthenticated");
       setError(null);
     } catch (logoutError) {
       if (isUnauthorizedError(logoutError)) {
+        clearLogoutLocalState();
         setSession(null);
         setStatus("unauthenticated");
         setError(null);
@@ -84,11 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutAll = useCallback(async () => {
     try {
       await logoutAllSessions();
+      clearLogoutLocalState();
       setSession(null);
       setStatus("unauthenticated");
       setError(null);
     } catch (logoutError) {
       if (isUnauthorizedError(logoutError)) {
+        clearLogoutLocalState();
         setSession(null);
         setStatus("unauthenticated");
         setError(null);

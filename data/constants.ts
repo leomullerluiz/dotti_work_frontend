@@ -21,6 +21,8 @@ export const STORAGE_KEYS = {
   consent: "dotti.consent",
 } as const;
 
+export const LOCAL_STORAGE_EVENT_NAME = "dotti-local-storage";
+
 export const PROFESSIONAL_ROLES = [
   "Front-end Developer",
   "Back-end Developer",

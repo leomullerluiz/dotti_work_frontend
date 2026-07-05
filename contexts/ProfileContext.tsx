@@ -164,14 +164,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date().toISOString(),
       };
 
-      setLocalProfile(nextProfileWithDate);
-      setApiProfile(nextProfileWithDate);
-
       if (status !== "authenticated") {
+        setLocalProfile(nextProfileWithDate);
+        setApiProfile(null);
         showToast("Profile saved");
         return;
       }
 
+      setApiProfile(nextProfileWithDate);
       setError(null);
 
       try {

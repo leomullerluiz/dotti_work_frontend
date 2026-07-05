@@ -5,6 +5,7 @@ import { AuthenticatedConsentBanner } from "@/components/privacy/AuthenticatedCo
 import { AuthProvider } from "./AuthContext";
 import { ConsentProvider } from "./ConsentContext";
 import { HistoryProvider } from "./HistoryContext";
+import { LocalStorageMaintenance } from "./LocalStorageMaintenance";
 import { MatchesProvider } from "./MatchesContext";
 import { ProfileProvider } from "./ProfileContext";
 import { SavedProjectsProvider } from "./SavedProjectsContext";
@@ -16,6 +17,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
+          <LocalStorageMaintenance />
           <ConsentProvider>
             <HistoryProvider>
               <ProfileProvider>

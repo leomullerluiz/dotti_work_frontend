@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-
-const localStorageEventName = "dotti-local-storage";
+import { LOCAL_STORAGE_EVENT_NAME } from "@/data/constants";
 
 function parseSnapshot<T>(snapshot: string | null, fallback: T) {
   if (!snapshot) {
@@ -33,11 +32,11 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       };
 
       window.addEventListener("storage", onStorage);
-      window.addEventListener(localStorageEventName, onLocalStorage);
+      window.addEventListener(LOCAL_STORAGE_EVENT_NAME, onLocalStorage);
 
       return () => {
         window.removeEventListener("storage", onStorage);
-        window.removeEventListener(localStorageEventName, onLocalStorage);
+        window.removeEventListener(LOCAL_STORAGE_EVENT_NAME, onLocalStorage);
       };
     },
     [key],
@@ -65,7 +64,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
       window.localStorage.setItem(key, JSON.stringify(resolvedValue));
       window.dispatchEvent(
-        new CustomEvent(localStorageEventName, { detail: { key } }),
+        new CustomEvent(LOCAL_STORAGE_EVENT_NAME, { detail: { key } }),
       );
     },
     [fallback, key],

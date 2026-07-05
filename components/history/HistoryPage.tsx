@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
+import { useAuth } from "@/hooks/useAuth";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import type { HistoryEvent } from "@/types";
@@ -29,6 +30,7 @@ type HistoryFilter = (typeof filters)[number];
 
 export function HistoryPage() {
   const { history, isLoading, error, retryHistory, clearHistory } = useHistory();
+  const { status: authStatus } = useAuth();
   const { ignoredProjectIds, undoIgnore } = useMatches();
   const [activeFilter, setActiveFilter] = useState<HistoryFilter>("All");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -73,6 +75,13 @@ export function HistoryPage() {
           </AnimateButton>
         ))}
       </div>
+
+      {authStatus !== "authenticated" && history.length > 0 ? (
+        <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+          This history is local browser data. Sign in with GitHub to load the
+          API-backed interaction history.
+        </div>
+      ) : null}
 
       {isLoading ? (
         <div className="space-y-3">

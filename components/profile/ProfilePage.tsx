@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ExportImportDataDialog } from "@/components/ui/ExportImportDataDialog";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { StatCard } from "@/components/ui/StatCard";
+import { useAuth } from "@/hooks/useAuth";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
@@ -30,6 +31,7 @@ export function ProfilePage() {
     exportProfile,
     importProfile,
   } = useProfile();
+  const { status: authStatus } = useAuth();
   const { savedProjects } = useSavedProjects();
   const { ignoredProjectIds, projects } = useMatches();
   const { history } = useHistory();
@@ -143,6 +145,13 @@ export function ProfilePage() {
         <StatCard label="In progress" value={stats.working} />
         <StatCard label="Completed" value={stats.contributed} />
       </div>
+
+      {authStatus !== "authenticated" ? (
+        <AnimatedDiv className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+          This profile is local browser data. Sign in with GitHub to load and
+          save the API-backed profile.
+        </AnimatedDiv>
+      ) : null}
 
       <GitHubIntegrationCard className="mt-5" returnTo="/profile" />
 
