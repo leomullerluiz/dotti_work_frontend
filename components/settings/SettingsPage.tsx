@@ -373,11 +373,12 @@ export function SettingsPage() {
 
       <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
-          Local browser data
+          Data maintenance
         </h2>
         <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          These actions only affect this browser&apos;s localStorage. They do not
-          delete the API account.
+          When you are signed in, saved projects, ignored projects, history, and
+          profile actions use the API. Local import, export, and browser cleanup
+          remain available for fallback data.
         </p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Button
@@ -425,7 +426,7 @@ export function SettingsPage() {
 
       <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
-          Local storage summary
+          Data summary
         </h2>
         <div className="mt-4 grid gap-3 text-sm sm:grid-cols-4">
           <Summary label="Profile" value={profile ? "Ready" : "Missing"} />

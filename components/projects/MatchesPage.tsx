@@ -32,7 +32,7 @@ export function MatchesPage() {
       <PageHeader
         eyebrow="Matches"
         title="Projects matching your profile"
-        description={`${projects.length} repositories match your current filters and local preferences.`}
+        description={`${projects.length} repositories match your current filters and API-backed preferences.`}
         actions={
           <>
             <Button
@@ -109,7 +109,7 @@ export function MatchesPage() {
               </>
             ) : (
               <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Complete onboarding to personalize the local matching experience.
+                Complete onboarding to personalize the API matching experience.
               </p>
             )}
           </AnimatedDiv>
