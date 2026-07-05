@@ -14,6 +14,16 @@ body {
   color: var(--theme-on-primary);
 }
 
+select option {
+  background: #ffffff;
+  color: #18181b;
+}
+
+.dark select option {
+  background: #18181b;
+  color: #f4f4f5;
+}
+
 .legal-document .legal-en {
   display: none;
 }

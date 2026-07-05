@@ -1,25 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { UserRound } from "lucide-react";
+import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
 export function ProfileSummaryCard() {
   const { profile } = useProfile();
+  const { session } = useAuth();
   const selectedTechs = profile?.technologies.slice(0, 4) ?? [];
+  const profileName =
+    profile?.name || session?.user.display_name || session?.user.login || "Open source explorer";
 
   return (
     <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
-          <UserRound size={20} />
-        </div>
+        <GitHubAvatar
+          avatarUrl={session?.user.avatar_url}
+          label={profileName}
+          size="sm"
+        />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-950 dark:text-white">
-            {profile?.name || "Open source explorer"}
+            {profileName}
           </p>
           <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
             {profile?.role || "Profile not completed"}

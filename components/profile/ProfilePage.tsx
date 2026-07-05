@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Download, RotateCcw, Upload } from "lucide-react";
+import { Download, RotateCcw } from "lucide-react";
+import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -11,7 +12,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ExportImportDataDialog } from "@/components/ui/ExportImportDataDialog";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,29 +29,27 @@ export function ProfilePage() {
     retryProfile,
     resetProfile,
     exportProfile,
-    importProfile,
   } = useProfile();
-  const { status: authStatus } = useAuth();
+  const { session, status: authStatus } = useAuth();
   const { savedProjects } = useSavedProjects();
   const { ignoredProjectIds, projects } = useMatches();
   const { history } = useHistory();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const groupedTechnologies = useMemo<Partial<Record<TechCategory, UserTechnology[]>>>(
     () => {
-    if (!profile) {
-      return {};
-    }
+      if (!profile) {
+        return {};
+      }
 
-    return profile.technologies.reduce<Partial<Record<TechCategory, UserTechnology[]>>>(
-      (acc, technology) => {
-        acc[technology.category] = [...(acc[technology.category] ?? []), technology];
-        return acc;
-      },
-      {},
-    );
-  }, [profile]);
+      return profile.technologies.reduce<Partial<Record<TechCategory, UserTechnology[]>>>(
+        (acc, technology) => {
+          acc[technology.category] = [...(acc[technology.category] ?? []), technology];
+          return acc;
+        },
+        {},
+      );
+    }, [profile]);
 
   const stats = {
     opened: history.filter((event) => event.type === "Opened GitHub").length,
@@ -59,6 +57,9 @@ export function ProfilePage() {
     contributed: savedProjects.filter((project) => project.status === "Contributed")
       .length,
   };
+  const profileName =
+    profile?.name || session?.user.display_name || session?.user.login || "Technical profile";
+  const githubLogin = session?.user.login ? `@${session.user.login}` : null;
 
   if (isLoading) {
     return (
@@ -114,7 +115,7 @@ export function ProfilePage() {
     <AppShell>
       <PageHeader
         eyebrow="Profile"
-        title={profile.name || "Technical profile"}
+        title={profileName}
         description={`${profile.role} - ${profile.seniority} - ${profile.goal}`}
         actions={
           <>
@@ -126,16 +127,30 @@ export function ProfilePage() {
               <Download size={16} />
               Export profile JSON
             </Button>
-            <Button type="button" variant="outline" onClick={() => setDialogOpen(true)}>
-              <Upload size={16} />
-              Import profile JSON
-            </Button>
             <Button type="button" variant="danger" onClick={() => setConfirmOpen(true)}>
               Reset profile
             </Button>
           </>
         }
       />
+
+      <AnimatedSection className="mb-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <GitHubAvatar
+            avatarUrl={session?.user.avatar_url}
+            label={profileName}
+            size="lg"
+          />
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-semibold text-zinc-950 dark:text-white">
+              {profileName}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              {githubLogin ?? profile.role}
+            </p>
+          </div>
+        </div>
+      </AnimatedSection>
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <StatCard label="Projects analyzed" value={projects.length} />
@@ -215,16 +230,6 @@ export function ProfilePage() {
           ))}
         </div>
       </AnimatedSection>
-
-      <ExportImportDataDialog
-        open={dialogOpen}
-        title="Import or inspect profile JSON"
-        exportLabel="Current profile"
-        importLabel="Import profile"
-        exportValue={profile}
-        onImport={importProfile}
-        onClose={() => setDialogOpen(false)}
-      />
 
       <ConfirmDialog
         open={confirmOpen}
