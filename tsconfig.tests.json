@@ -12,5 +12,5 @@
     "incremental": false,
     "tsBuildInfoFile": ".tmp/service-tests.tsbuildinfo"
   },
-  "include": ["tests/**/*.ts", "services/**/*.ts", "types/**/*.ts"]
+  "include": ["tests/**/*.ts", "services/**/*.ts", "types/**/*.ts", "utils/**/*.ts"]
 }

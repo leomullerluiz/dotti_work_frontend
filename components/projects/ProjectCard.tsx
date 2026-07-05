@@ -18,6 +18,7 @@ import { useMatches } from "@/hooks/useMatches";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import type { MatchedProject } from "@/types";
 import { formatNumber, timeAgo } from "@/utils/format";
+import { projectDetailHref } from "@/utils/projectRoutes";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 import { RepositoryAvatar } from "./RepositoryAvatar";
@@ -29,6 +30,7 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
   const { addHistory } = useHistory();
   const saved = isSaved(project.id);
   const projectName = `${project.owner}/${project.repo}`;
+  const detailHref = projectDetailHref(project.owner, project.repo);
 
   const registerViewed = () => {
     addHistory({
@@ -57,7 +59,7 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={`/projects/${project.owner}/${project.repo}`}
+              href={detailHref}
               onClick={registerViewed}
               className="truncate text-base font-semibold text-zinc-950 transition hover:text-coral-600 dark:text-white dark:hover:text-coral-300"
             >
@@ -118,7 +120,7 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={`/projects/${project.owner}/${project.repo}`}
+            href={detailHref}
             onClick={registerViewed}
             className={buttonClasses({ variant: "outline", size: "sm" })}
           >

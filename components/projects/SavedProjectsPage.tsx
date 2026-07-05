@@ -15,6 +15,7 @@ import { useHistory } from "@/hooks/useHistory";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import type { ProjectStatus } from "@/types";
 import { formatDate } from "@/utils/format";
+import { projectDetailHref } from "@/utils/projectRoutes";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 import { ProjectStatusSelect } from "./ProjectStatusSelect";
 import { RepositoryAvatar } from "./RepositoryAvatar";
@@ -151,7 +152,7 @@ export function SavedProjectsPage() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Link
-                          href={`/projects/${project.owner}/${project.repo}`}
+                          href={projectDetailHref(project.owner, project.repo)}
                           className="font-semibold text-zinc-950 hover:text-coral-600 dark:text-white"
                         >
                           {repositoryName}
