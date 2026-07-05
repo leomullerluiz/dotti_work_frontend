@@ -269,10 +269,61 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     enqueueData({
       state: {
         github_repository_id: 123,
-        state: "pull_request_sent",
+        state: "saved",
       },
     });
     const savedState = await repositoryStates.setRepositoryState(123, {
+      state: "saved",
+      notes: "Salvar para avaliar",
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/repositories/123/state");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assertJsonBody({ state: "saved", notes: "Salvar para avaliar" });
+    assert.equal(savedState.state, "saved");
+
+    resetFetchMock();
+    enqueueData({
+      state: {
+        github_repository_id: 123,
+        state: "ignored",
+      },
+    });
+    const ignoredState = await repositoryStates.setRepositoryState(123, {
+      state: "ignored",
+      notes: "Nao combina agora",
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/repositories/123/state");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assertJsonBody({ state: "ignored", notes: "Nao combina agora" });
+    assert.equal(ignoredState.state, "ignored");
+
+    resetFetchMock();
+    enqueueData({
+      state: {
+        github_repository_id: 123,
+        state: "working",
+      },
+    });
+    const workingState = await repositoryStates.setRepositoryState(123, {
+      state: "working",
+      notes: null,
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/repositories/123/state");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assertJsonBody({ state: "working", notes: null });
+    assert.equal(workingState.state, "working");
+
+    resetFetchMock();
+    enqueueData({
+      state: {
+        github_repository_id: 123,
+        state: "pull_request_sent",
+      },
+    });
+    const pullRequestState = await repositoryStates.setRepositoryState(123, {
       state: "pull_request_sent",
       notes: "PR aberto",
     });
@@ -280,7 +331,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/me/repositories/123/state");
     assert.equal(lastRequest().init?.method, "PUT");
     assertJsonBody({ state: "pull_request_sent", notes: "PR aberto" });
-    assert.equal(savedState.state, "pull_request_sent");
+    assert.equal(pullRequestState.state, "pull_request_sent");
 
     resetFetchMock();
     enqueueData({ removed: true });

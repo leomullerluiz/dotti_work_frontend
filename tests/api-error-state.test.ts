@@ -68,8 +68,8 @@ test("apiErrorState maps authentication, validation, rate limit, and outage stat
   assert.equal(
     apiErrorMessage(
       new DottiApiError({
-        status: 503,
-        message: "Down",
+        status: 502,
+        message: "Bad gateway",
       }),
       {
         fallback: "Fallback",
@@ -77,5 +77,15 @@ test("apiErrorState maps authentication, validation, rate limit, and outage stat
       },
     ),
     "Unavailable.",
+  );
+
+  assert.equal(
+    apiErrorTitle(
+      new DottiApiError({
+        status: 503,
+        message: "Down",
+      }),
+    ),
+    "Service unavailable",
   );
 });

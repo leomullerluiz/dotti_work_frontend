@@ -1,5 +1,6 @@
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
+import { getRemoteListUiState } from "@/services/dotti/remoteUiState";
 import type { MatchedProject } from "@/types";
 import { ProjectCard } from "./ProjectCard";
 
@@ -10,7 +11,12 @@ export function ProjectGrid({
   projects: MatchedProject[];
   isLoading?: boolean;
 }) {
-  if (isLoading) {
+  const state = getRemoteListUiState({
+    isLoading,
+    itemCount: projects.length,
+  });
+
+  if (state === "loading") {
     return (
       <div className="grid gap-4">
         {Array.from({ length: 4 }).map((_, index) => (
@@ -20,7 +26,7 @@ export function ProjectGrid({
     );
   }
 
-  if (projects.length === 0) {
+  if (state === "empty") {
     return (
       <EmptyState
         title="No projects match these filters"
