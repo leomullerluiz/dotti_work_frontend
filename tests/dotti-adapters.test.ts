@@ -290,6 +290,41 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     });
   });
 
+  await t.test("maps API history event types to visual history labels", () => {
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "viewed_project" }).type,
+      "Viewed project",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "saved_project" }).type,
+      "Saved project",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "ignored_project" }).type,
+      "Ignored project",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "opened_github" }).type,
+      "Opened GitHub",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "started_contributing" }).type,
+      "Marked as contributing",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "sent_pull_request" }).type,
+      "Marked as contributing",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "marked_contributed" }).type,
+      "Marked as contributed",
+    );
+    assert.equal(
+      adaptApiHistoryEvent({ event_type: "restored_project" }).type,
+      "Saved project",
+    );
+  });
+
   await t.test("uses safe repository and history fallbacks", () => {
     const project = adaptApiRepositorySummaryToMatchedProject({});
     assert.equal(project.id, "unknown-repository");

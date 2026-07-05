@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import type { HistoryEvent } from "@/types";
@@ -27,7 +28,7 @@ const filters = [
 type HistoryFilter = (typeof filters)[number];
 
 export function HistoryPage() {
-  const { history, clearHistory } = useHistory();
+  const { history, isLoading, error, retryHistory, clearHistory } = useHistory();
   const { ignoredProjectIds, undoIgnore } = useMatches();
   const [activeFilter, setActiveFilter] = useState<HistoryFilter>("All");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -42,7 +43,7 @@ export function HistoryPage() {
       <PageHeader
         eyebrow="History"
         title="Interaction history"
-        description="A local timeline of viewed, saved, ignored, and GitHub-opened projects."
+        description="A timeline of viewed, saved, ignored, and GitHub-opened projects from your dotti.work account."
         actions={
           <Button
             type="button"
@@ -73,10 +74,31 @@ export function HistoryPage() {
         ))}
       </div>
 
-      {events.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <SkeletonProjectCard key={index} />
+          ))}
+        </div>
+      ) : error ? (
+        <EmptyState
+          title="Could not load history"
+          description={error}
+          action={
+            <Button
+              type="button"
+              onClick={() => {
+                void retryHistory();
+              }}
+            >
+              Retry
+            </Button>
+          }
+        />
+      ) : events.length === 0 ? (
         <EmptyState
           title="No events in this view"
-          description="Interactions are recorded locally as you browse matches, save projects, ignore suggestions, or open GitHub links."
+          description="Interactions will appear here as you browse matches, save projects, ignore suggestions, or open GitHub links."
         />
       ) : (
         <div className="space-y-3">
@@ -110,7 +132,9 @@ export function HistoryPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => undoIgnore(event.repositoryId as string)}
+                      onClick={() => {
+                        void undoIgnore(event.repositoryId as string);
+                      }}
                     >
                       <RotateCcw size={15} />
                       Undo ignore
@@ -126,9 +150,11 @@ export function HistoryPage() {
       <ConfirmDialog
         open={confirmOpen}
         title="Clear interaction history?"
-        description="This removes the local timeline, but it does not clear saved projects or ignored projects."
+        description="This removes your API history, but it does not clear saved projects or ignored projects."
         confirmLabel="Clear history"
-        onConfirm={clearHistory}
+        onConfirm={() => {
+          void clearHistory();
+        }}
         onClose={() => setConfirmOpen(false)}
       />
     </AppShell>
