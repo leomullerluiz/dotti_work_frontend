@@ -223,7 +223,7 @@ export function MultiStepOnboarding({
 
       savedOnce.current = true;
       setStep(3);
-      saveProfile(pendingProfile);
+      void saveProfile(pendingProfile).catch(() => undefined);
       void completeOnboarding(pendingProfile);
     }, 0);
 
@@ -240,7 +240,7 @@ export function MultiStepOnboarding({
     savedOnce.current = true;
     const nextProfile = buildProfile();
 
-    saveProfile(nextProfile);
+    void saveProfile(nextProfile).catch(() => undefined);
     persistPendingOnboarding(nextProfile);
     void completeOnboarding(nextProfile);
   }, [buildProfile, completeOnboarding, saveProfile, step]);

@@ -1,23 +1,47 @@
 import type {
+  ActivityLevel,
   ContributionType,
+  DeveloperProfile,
   DifficultyLevel,
   HistoryEvent,
   HistoryEventType,
   MatchedProject,
+  MatchPreferences,
+  OrganizationType,
   ProjectStatus,
+  ProjectSize,
   RepositoryIssue,
   SavedProject,
+  SeniorityLevel,
+  SkillLevel,
+  TechCategory,
+  UserTechnology,
 } from "@/types";
 import type {
   ApiActivityEventType,
+  ApiContributionType,
+  ApiDifficultyLevel,
   ApiHistoryEvent,
   ApiMatch,
+  ApiOrganizationType,
+  ApiProfileGoal,
+  ApiProfileUpdateInput,
+  ApiProficiencyLevel,
+  ApiProjectSize,
   ApiRepositoryDetail,
   ApiRepositoryHealth,
   ApiRepositoryIssue,
   ApiRepositoryMatchItem,
   ApiRepositoryStateValue,
   ApiRepositorySummary,
+  ApiTechnology,
+  ApiTechnologyCategory,
+  ApiUser,
+  ApiUserPreference,
+  ApiUserPreferenceInput,
+  ApiUserProfile,
+  ApiUserTechnology,
+  ApiUserTechnologyInput,
   ApiUserRepositoryState,
 } from "./types";
 
@@ -60,6 +84,89 @@ const activityEventToHistoryEvent: Record<ApiActivityEventType, HistoryEventType
   sent_pull_request: "Marked as contributing",
   marked_contributed: "Marked as contributed",
   restored_project: "Saved project",
+};
+
+const defaultPreferences: MatchPreferences = {
+  contributionTypes: ["Bug fix", "Documentation"],
+  difficulty: "Easy",
+  projectSize: "Any",
+  activityLevel: "High",
+  preferredLanguage: "Any",
+  organizationType: "Any",
+};
+
+const seniorityToVisual: Record<"junior" | "mid" | "senior", SeniorityLevel> = {
+  junior: "Junior",
+  mid: "Mid-Level",
+  senior: "Senior",
+};
+
+const seniorityToApi: Record<SeniorityLevel, "junior" | "mid" | "senior"> = {
+  Junior: "junior",
+  "Mid-Level": "mid",
+  Senior: "senior",
+};
+
+const profileGoalToVisual: Record<ApiProfileGoal, string> = {
+  first_contribution: "Make my first contribution",
+  build_portfolio: "Build portfolio",
+  practical_experience: "Gain practical experience",
+  join_communities: "Join open source communities",
+  long_term_projects: "Find long-term projects",
+};
+
+const profileGoalToApi: Record<string, ApiProfileGoal> = {
+  "Make my first contribution": "first_contribution",
+  "Build portfolio": "build_portfolio",
+  "Gain practical experience": "practical_experience",
+  "Join open source communities": "join_communities",
+  "Find long-term projects": "long_term_projects",
+};
+
+const techCategoryToVisual: Record<ApiTechnologyCategory, TechCategory> = {
+  language: "Languages",
+  framework: "Frameworks",
+  library: "Libraries",
+  tool: "Tools",
+  platform: "Platforms",
+  database: "Databases",
+  devops_cloud: "DevOps / Cloud",
+};
+
+const proficiencyToVisual: Record<ApiProficiencyLevel, SkillLevel> = {
+  learning: "Learning",
+  basic: "Basic",
+  daily: "Daily use",
+  advanced: "Advanced",
+};
+
+const proficiencyToApi: Record<SkillLevel, ApiProficiencyLevel> = {
+  Learning: "learning",
+  Basic: "basic",
+  "Daily use": "daily",
+  Advanced: "advanced",
+};
+
+const contributionTypeToVisual: Record<ApiContributionType, ContributionType> = {
+  bug_fix: "Bug fix",
+  feature: "Feature",
+  documentation: "Documentation",
+  tests: "Tests",
+  performance: "Performance",
+  refactor: "Refactoring",
+  accessibility: "Accessibility",
+  translation: "Translation",
+};
+
+const contributionTypeToApi: Record<ContributionType, ApiContributionType> = {
+  "Bug fix": "bug_fix",
+  Feature: "feature",
+  Documentation: "documentation",
+  Tests: "tests",
+  Performance: "performance",
+  Refactoring: "refactor",
+  Accessibility: "accessibility",
+  Translation: "translation",
 };
 
 export function adaptApiRepositorySummaryToMatchedProject(
@@ -207,6 +314,115 @@ export function adaptApiRepositoryStates(
 
 export function adaptApiHistoryEvents(events: ApiHistoryEvent[]): HistoryEvent[] {
   return events.map(adaptApiHistoryEvent);
+}
+
+export function adaptApiProfileToDeveloperProfile({
+  user,
+  profile,
+  technologies = [],
+  preferences,
+}: {
+  user?: ApiUser | null;
+  profile?: ApiUserProfile | null;
+  technologies?: ApiUserTechnology[];
+  preferences?: ApiUserPreference | null;
+}): DeveloperProfile | null {
+  if (!profile && technologies.length === 0 && !preferences) {
+    return null;
+  }
+
+  return {
+    name: user?.display_name ?? user?.login ?? undefined,
+    role: profile?.role ?? "",
+    seniority: profile?.seniority
+      ? seniorityToVisual[profile.seniority]
+      : "Junior",
+    goal: profile?.goals?.[0]
+      ? profileGoalToVisual[profile.goals[0]]
+      : "",
+    technologies: technologies.map(adaptApiUserTechnology),
+    preferences: adaptApiUserPreference(preferences),
+    completedOnboarding: Boolean(profile?.onboarding_completed),
+    updatedAt:
+      profile?.updated_at ??
+      user?.updated_at ??
+      user?.created_at ??
+      fallbackDate,
+  };
+}
+
+export function adaptApiTechnologyToUserTechnology(
+  technology: ApiTechnology,
+): UserTechnology {
+  return {
+    name: technology.name,
+    category: techCategoryToVisual[technology.category],
+    level: "Basic",
+  };
+}
+
+export function developerProfileToApiProfileInput(
+  profile: DeveloperProfile,
+): ApiProfileUpdateInput {
+  return {
+    display_name: profile.name?.trim() || null,
+    role: profile.role || null,
+    seniority: seniorityToApi[profile.seniority],
+    goals: profile.goal ? [profileGoalToApi[profile.goal] ?? profile.goal] : [],
+    onboarding_completed: profile.completedOnboarding,
+  };
+}
+
+export function developerProfileToApiTechnologyInputs(
+  profile: DeveloperProfile,
+  catalog: ApiTechnology[],
+) {
+  const technologies: ApiUserTechnologyInput[] = [];
+  const skippedTechnologies: string[] = [];
+  const catalogByName = new Map(
+    catalog.map((technology) => [technology.name.toLowerCase(), technology]),
+  );
+
+  profile.technologies.slice(0, 50).forEach((technology) => {
+    const apiTechnology = catalogByName.get(technology.name.toLowerCase());
+
+    if (!apiTechnology) {
+      skippedTechnologies.push(technology.name);
+      return;
+    }
+
+    technologies.push({
+      technology_id: apiTechnology.id,
+      proficiency_level: proficiencyToApi[technology.level],
+      interest_level: "contribute",
+    });
+  });
+
+  return {
+    technologies,
+    skippedTechnologies,
+  };
+}
+
+export function matchPreferencesToApiInput(
+  preferences: MatchPreferences,
+): ApiUserPreferenceInput {
+  return {
+    contribution_types: preferences.contributionTypes.map(
+      (type) => contributionTypeToApi[type],
+    ),
+    difficulty_levels: [visualDifficultyToApi(preferences.difficulty)],
+    project_sizes: visualProjectSizeToApi(preferences.projectSize),
+    documentation_languages: [
+      preferences.preferredLanguage === "Any" ? "any" : "en",
+    ],
+    organization_types: visualOrganizationToApi(preferences.organizationType),
+    activity_window_days: visualActivityToDays(preferences.activityLevel),
+    minimum_stars: 0,
+    require_good_first_issue: preferences.difficulty === "Beginner",
+    require_help_wanted: false,
+    default_sort_by: "best_match",
+  };
 }
 
 export function apiRepositoryStateToProjectStatus(
@@ -361,6 +577,149 @@ function mapContributionType(
     return "Refactoring";
   }
   return "Feature";
+}
+
+function adaptApiUserTechnology(technology: ApiUserTechnology): UserTechnology {
+  return {
+    name: technology.name ?? `Technology #${technology.technology_id}`,
+    category: technology.category
+      ? techCategoryToVisual[technology.category]
+      : "Tools",
+    level: proficiencyToVisual[technology.proficiency_level],
+  };
+}
+
+function adaptApiUserPreference(
+  preferences: ApiUserPreference | null | undefined,
+): MatchPreferences {
+  if (!preferences) {
+    return defaultPreferences;
+  }
+
+  return {
+    contributionTypes:
+      preferences.contribution_types?.map(
+        (type) => contributionTypeToVisual[type],
+      ) ?? defaultPreferences.contributionTypes,
+    difficulty: apiDifficultyToVisual(preferences.difficulty_levels?.[0]),
+    projectSize: apiProjectSizeToVisual(preferences.project_sizes?.[0]),
+    activityLevel: apiActivityDaysToVisual(preferences.activity_window_days),
+    preferredLanguage:
+      preferences.documentation_languages?.[0] === "any"
+        ? "Any"
+        : preferences.documentation_languages?.[0]?.toUpperCase() ?? "Any",
+    organizationType: apiOrganizationToVisual(preferences.organization_types?.[0]),
+  };
+}
+
+function apiDifficultyToVisual(
+  value: ApiDifficultyLevel | undefined,
+): DifficultyLevel {
+  if (value === "beginner") {
+    return "Beginner";
+  }
+  if (value === "advanced") {
+    return "Hard";
+  }
+  return "Medium";
+}
+
+function visualDifficultyToApi(value: DifficultyLevel): ApiDifficultyLevel {
+  if (value === "Beginner" || value === "Easy") {
+    return "beginner";
+  }
+  if (value === "Hard") {
+    return "advanced";
+  }
+  return "intermediate";
+}
+
+function apiProjectSizeToVisual(
+  value: ApiProjectSize | undefined,
+): ProjectSize {
+  if (value === "small") {
+    return "Small";
+  }
+  if (value === "medium") {
+    return "Medium";
+  }
+  if (value === "large") {
+    return "Large";
+  }
+  return "Any";
+}
+
+function visualProjectSizeToApi(value: ProjectSize): ApiProjectSize[] {
+  if (value === "Small") {
+    return ["small"];
+  }
+  if (value === "Medium") {
+    return ["medium"];
+  }
+  if (value === "Large") {
+    return ["large"];
+  }
+  return ["small", "medium", "large"];
+}
+
+function apiActivityDaysToVisual(days: number | undefined): ActivityLevel {
+  if (!days || days <= 30) {
+    return "Very active";
+  }
+  if (days <= 90) {
+    return "High";
+  }
+  if (days <= 180) {
+    return "Moderate";
+  }
+  return "Low";
+}
+
+function visualActivityToDays(value: ActivityLevel) {
+  if (value === "Very active") {
+    return 30;
+  }
+  if (value === "High") {
+    return 90;
+  }
+  if (value === "Moderate") {
+    return 180;
+  }
+  return 365;
+}
+
+function apiOrganizationToVisual(
+  value: ApiOrganizationType | undefined,
+): OrganizationType {
+  if (value === "community") {
+    return "Community";
+  }
+  if (value === "company" || value === "startup") {
+    return "Company-backed";
+  }
+  if (value === "foundation") {
+    return "Foundation";
+  }
+  if (value === "independent") {
+    return "Solo maintainer";
+  }
+  return "Any";
+}
+
+function visualOrganizationToApi(value: OrganizationType): ApiOrganizationType[] {
+  if (value === "Community") {
+    return ["community"];
+  }
+  if (value === "Company-backed") {
+    return ["company"];
+  }
+  if (value === "Foundation") {
+    return ["foundation"];
+  }
+  if (value === "Solo maintainer") {
+    return ["independent"];
+  }
+  return ["any"];
 }
 
 function healthChecklist(

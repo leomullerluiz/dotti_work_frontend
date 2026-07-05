@@ -3,11 +3,15 @@ import test from "node:test";
 import {
   adaptApiHistoryEvent,
   adaptApiMatchToMatchedProject,
+  adaptApiProfileToDeveloperProfile,
   adaptApiRepositoryDetailToMatchedProject,
   adaptApiRepositoryIssue,
   adaptApiRepositoryStates,
   adaptApiRepositorySummaryToMatchedProject,
   adaptApiUserRepositoryState,
+  developerProfileToApiProfileInput,
+  developerProfileToApiTechnologyInputs,
+  matchPreferencesToApiInput,
   apiRepositoryStateToProjectStatus,
   projectStatusToApiRepositoryState,
 } from "../services/dotti/adapters";
@@ -20,6 +24,141 @@ import type {
 } from "../services/dotti/types";
 
 test("dotti API adapters normalize backend DTOs into visual types", async (t) => {
+  await t.test("adapts API profile, technologies, and preferences into DeveloperProfile", () => {
+    const profile = adaptApiProfileToDeveloperProfile({
+      user: {
+        login: "ada",
+        display_name: "Ada Lovelace",
+        updated_at: "2026-07-05T10:00:00Z",
+      },
+      profile: {
+        role: "Front-end Developer",
+        seniority: "mid",
+        goals: ["build_portfolio"],
+        onboarding_completed: true,
+        updated_at: "2026-07-05T11:00:00Z",
+      },
+      technologies: [
+        {
+          technology_id: 1,
+          name: "TypeScript",
+          category: "language",
+          proficiency_level: "daily",
+          interest_level: "contribute",
+        },
+      ],
+      preferences: {
+        contribution_types: ["bug_fix", "documentation"],
+        difficulty_levels: ["beginner"],
+        project_sizes: ["small"],
+        documentation_languages: ["any"],
+        organization_types: ["community"],
+        activity_window_days: 30,
+        minimum_stars: 0,
+        require_good_first_issue: true,
+        require_help_wanted: false,
+        default_sort_by: "best_match",
+      },
+    });
+
+    assert.deepEqual(profile, {
+      name: "Ada Lovelace",
+      role: "Front-end Developer",
+      seniority: "Mid-Level",
+      goal: "Build portfolio",
+      technologies: [
+        {
+          name: "TypeScript",
+          category: "Languages",
+          level: "Daily use",
+        },
+      ],
+      preferences: {
+        contributionTypes: ["Bug fix", "Documentation"],
+        difficulty: "Beginner",
+        projectSize: "Small",
+        activityLevel: "Very active",
+        preferredLanguage: "Any",
+        organizationType: "Community",
+      },
+      completedOnboarding: true,
+      updatedAt: "2026-07-05T11:00:00Z",
+    });
+  });
+
+  await t.test("converts DeveloperProfile into profile, technology, and preference inputs", () => {
+    const profile = {
+      name: "Ada Lovelace",
+      role: "Full Stack Developer",
+      seniority: "Senior" as const,
+      goal: "Make my first contribution",
+      technologies: [
+        {
+          name: "TypeScript",
+          category: "Languages" as const,
+          level: "Advanced" as const,
+        },
+        {
+          name: "Unknown Tech",
+          category: "Tools" as const,
+          level: "Basic" as const,
+        },
+      ],
+      preferences: {
+        contributionTypes: ["Feature" as const, "Tests" as const],
+        difficulty: "Hard" as const,
+        projectSize: "Large" as const,
+        activityLevel: "Moderate" as const,
+        preferredLanguage: "Any",
+        organizationType: "Company-backed" as const,
+      },
+      completedOnboarding: true,
+      updatedAt: "2026-07-05T12:00:00Z",
+    };
+
+    assert.deepEqual(developerProfileToApiProfileInput(profile), {
+      display_name: "Ada Lovelace",
+      role: "Full Stack Developer",
+      seniority: "senior",
+      goals: ["first_contribution"],
+      onboarding_completed: true,
+    });
+
+    assert.deepEqual(
+      developerProfileToApiTechnologyInputs(profile, [
+        {
+          id: 10,
+          slug: "typescript",
+          name: "TypeScript",
+          category: "language",
+        },
+      ]),
+      {
+        technologies: [
+          {
+            technology_id: 10,
+            proficiency_level: "advanced",
+            interest_level: "contribute",
+          },
+        ],
+        skippedTechnologies: ["Unknown Tech"],
+      },
+    );
+
+    assert.deepEqual(matchPreferencesToApiInput(profile.preferences), {
+      contribution_types: ["feature", "tests"],
+      difficulty_levels: ["advanced"],
+      project_sizes: ["large"],
+      documentation_languages: ["any"],
+      organization_types: ["company"],
+      activity_window_days: 180,
+      minimum_stars: 0,
+      require_good_first_issue: false,
+      require_help_wanted: false,
+      default_sort_by: "best_match",
+    });
+  });
+
   await t.test("adapts RepositorySummary into MatchedProject with safe fallbacks", () => {
     const repository: ApiRepositorySummary = {
       github_repository_id: 42,

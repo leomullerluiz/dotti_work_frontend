@@ -11,8 +11,8 @@ import { Button, buttonClasses } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ExportImportDataDialog } from "@/components/ui/ExportImportDataDialog";
+import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { mockProjects } from "@/data/repositories";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
@@ -20,9 +20,17 @@ import { useSavedProjects } from "@/hooks/useSavedProjects";
 import type { TechCategory, UserTechnology } from "@/types";
 
 export function ProfilePage() {
-  const { profile, resetProfile, exportProfile, importProfile } = useProfile();
+  const {
+    profile,
+    isLoading,
+    error,
+    retryProfile,
+    resetProfile,
+    exportProfile,
+    importProfile,
+  } = useProfile();
   const { savedProjects } = useSavedProjects();
-  const { ignoredProjectIds } = useMatches();
+  const { ignoredProjectIds, projects } = useMatches();
   const { history } = useHistory();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -48,6 +56,40 @@ export function ProfilePage() {
     contributed: savedProjects.filter((project) => project.status === "Contributed")
       .length,
   };
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <SkeletonProjectCard />
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonProjectCard key={index} />
+          ))}
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell>
+        <EmptyState
+          title="Could not load profile"
+          description={error}
+          action={
+            <Button
+              type="button"
+              onClick={() => {
+                void retryProfile();
+              }}
+            >
+              Retry
+            </Button>
+          }
+        />
+      </AppShell>
+    );
+  }
 
   if (!profile) {
     return (
@@ -93,7 +135,7 @@ export function ProfilePage() {
       />
 
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Projects analyzed" value={mockProjects.length} />
+        <StatCard label="Projects analyzed" value={projects.length} />
         <StatCard label="Projects saved" value={savedProjects.length} />
         <StatCard label="Projects ignored" value={ignoredProjectIds.length} />
         <StatCard label="GitHub links opened" value={stats.opened} />
@@ -177,7 +219,9 @@ export function ProfilePage() {
         title="Reset profile?"
         description="This clears only your technical profile. Saved projects and history stay untouched."
         confirmLabel="Reset profile"
-        onConfirm={resetProfile}
+        onConfirm={() => {
+          void resetProfile();
+        }}
         onClose={() => setConfirmOpen(false)}
       />
     </AppShell>

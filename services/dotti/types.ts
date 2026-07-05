@@ -45,6 +45,139 @@ export type ApiSortBy =
   | "beginner_friendly"
   | "recently_updated";
 
+export type ApiTechnologyCategory =
+  | "language"
+  | "framework"
+  | "library"
+  | "tool"
+  | "platform"
+  | "database"
+  | "devops_cloud";
+
+export type ApiProficiencyLevel = "learning" | "basic" | "daily" | "advanced";
+
+export type ApiInterestLevel = "learn" | "contribute" | "mentor";
+
+export type ApiContributionType =
+  | "bug_fix"
+  | "feature"
+  | "documentation"
+  | "tests"
+  | "performance"
+  | "refactor"
+  | "accessibility"
+  | "translation";
+
+export type ApiDifficultyLevel = "beginner" | "intermediate" | "advanced";
+
+export type ApiProjectSize = "small" | "medium" | "large";
+
+export type ApiDocumentationLanguage = "en" | "pt" | "es" | "any";
+
+export type ApiOrganizationType =
+  | "independent"
+  | "startup"
+  | "company"
+  | "community"
+  | "foundation"
+  | "any";
+
+export type ApiProfileGoal =
+  | "first_contribution"
+  | "build_portfolio"
+  | "practical_experience"
+  | "join_communities"
+  | "long_term_projects";
+
+export type ApiUser = {
+  id?: number;
+  login?: string | null;
+  display_name?: string | null;
+  email?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  company?: string | null;
+  website_url?: string | null;
+  github_profile_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type ApiUserProfile = {
+  id?: number;
+  user_id?: number;
+  role?: string | null;
+  seniority?: ApiSeniority | null;
+  onboarding_completed?: boolean;
+  onboarding_completed_at?: string | null;
+  goals?: ApiProfileGoal[];
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ApiProfileUpdateInput = {
+  display_name?: string | null;
+  role?: string | null;
+  seniority?: ApiSeniority | null;
+  goals?: string[];
+  onboarding_completed?: boolean;
+};
+
+export type ApiTechnology = {
+  id: number;
+  slug: string;
+  name: string;
+  category: ApiTechnologyCategory;
+  github_language?: string | null;
+  github_topics?: string[];
+  is_active?: boolean;
+  display_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ApiUserTechnology = {
+  technology_id: number;
+  proficiency_level: ApiProficiencyLevel;
+  interest_level?: ApiInterestLevel;
+  id?: number;
+  user_id?: number;
+  slug?: string;
+  name?: string;
+  category?: ApiTechnologyCategory;
+  github_language?: string | null;
+  github_topics?: string[];
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ApiUserTechnologyInput = {
+  technology_id: number;
+  proficiency_level: ApiProficiencyLevel;
+  interest_level?: ApiInterestLevel;
+};
+
+export type ApiUserPreferenceInput = {
+  contribution_types: ApiContributionType[];
+  difficulty_levels: ApiDifficultyLevel[];
+  project_sizes: ApiProjectSize[];
+  documentation_languages: ApiDocumentationLanguage[];
+  organization_types: ApiOrganizationType[];
+  activity_window_days?: number;
+  minimum_stars?: number;
+  require_good_first_issue?: boolean;
+  require_help_wanted?: boolean;
+  default_sort_by?: ApiSortBy;
+};
+
+export type ApiUserPreference = ApiUserPreferenceInput & {
+  id?: number;
+  user_id?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type ApiRepositorySummary = {
   github_repository_id?: number | null;
   owner?: string | null;

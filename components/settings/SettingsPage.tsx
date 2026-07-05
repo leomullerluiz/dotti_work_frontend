@@ -160,7 +160,13 @@ export function SettingsPage() {
           <Button type="button" variant="outline" onClick={clearHistory}>
             Clear history
           </Button>
-          <Button type="button" variant="outline" onClick={resetProfile}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              void resetProfile();
+            }}
+          >
             Reset profile
           </Button>
           <Button

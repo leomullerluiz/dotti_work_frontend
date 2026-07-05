@@ -27,7 +27,7 @@ export function ExportImportDataDialog({
   exportLabel: string;
   importLabel: string;
   exportValue: unknown;
-  onImport: (json: string) => boolean;
+  onImport: (json: string) => boolean | Promise<boolean>;
   onClose: () => void;
 }) {
   const [json, setJson] = useState("");
@@ -96,10 +96,12 @@ export function ExportImportDataDialog({
               <Button
                 type="button"
                 onClick={() => {
-                  if (onImport(json)) {
-                    setJson("");
-                    onClose();
-                  }
+                  void Promise.resolve(onImport(json)).then((imported) => {
+                    if (imported) {
+                      setJson("");
+                      onClose();
+                    }
+                  });
                 }}
                 disabled={!json.trim()}
               >

@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button as AnimateButton } from "@/components/animate-ui/primitives/buttons/button";
 import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
-import { TECHNOLOGY_CATALOG } from "@/data/constants";
+import { Button } from "@/components/ui/Button";
+import { adaptApiTechnologyToUserTechnology } from "@/services/dotti/adapters";
+import { listTechnologies } from "@/services/dotti/profile";
 import type { SkillLevel, TechCategory, UserTechnology } from "@/types";
 import { cn } from "@/utils/cn";
 import { SearchInput } from "../ui/SearchInput";
 
 const skillLevels: SkillLevel[] = ["Learning", "Basic", "Daily use", "Advanced"];
+const defaultCategory: TechCategory = "Languages";
 
 export function TechnologySelector({
   selected,
@@ -19,25 +22,92 @@ export function TechnologySelector({
   onChange: (technologies: UserTechnology[]) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<TechCategory>("Languages");
+  const [activeCategory, setActiveCategory] =
+    useState<TechCategory>(defaultCategory);
+  const [catalog, setCatalog] = useState<UserTechnology[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCatalog = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await listTechnologies({ active: true, limit: 100 });
+      const technologies = response.items.map(adaptApiTechnologyToUserTechnology);
+      setCatalog(technologies);
+      setActiveCategory((current) =>
+        technologies.some((technology) => technology.category === current)
+          ? current
+          : technologies[0]?.category ?? defaultCategory,
+      );
+    } catch (loadError) {
+      setCatalog([]);
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Could not load technology catalog.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    listTechnologies({ active: true, limit: 100 })
+      .then((response) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        const technologies = response.items.map(adaptApiTechnologyToUserTechnology);
+        setCatalog(technologies);
+        setActiveCategory((current) =>
+          technologies.some((technology) => technology.category === current)
+            ? current
+            : technologies[0]?.category ?? defaultCategory,
+        );
+      })
+      .catch((loadError) => {
+        if (!isCurrent) {
+          return;
+        }
+
+        setCatalog([]);
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Could not load technology catalog.",
+        );
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const options = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return Object.entries(TECHNOLOGY_CATALOG).flatMap(([category, technologies]) =>
-      technologies
-        .filter((technology) =>
-          normalizedQuery ? technology.toLowerCase().includes(normalizedQuery) : true,
-        )
-        .map((technology) => ({
-          name: technology,
-          category: category as TechCategory,
-        })),
+    return catalog.filter((technology) =>
+      normalizedQuery
+        ? technology.name.toLowerCase().includes(normalizedQuery)
+        : true,
     );
-  }, [query]);
+  }, [catalog, query]);
 
   const visibleOptions = query
     ? options
     : options.filter((technology) => technology.category === activeCategory);
+  const categories = Array.from(
+    new Set(catalog.map((technology) => technology.category)),
+  );
 
   const addTechnology = (technology: { name: string; category: TechCategory }) => {
     if (selected.some((item) => item.name === technology.name)) {
@@ -69,11 +139,11 @@ export function TechnologySelector({
         />
 
         <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-          {Object.keys(TECHNOLOGY_CATALOG).map((category) => (
+          {categories.map((category) => (
             <AnimateButton
               key={category}
               type="button"
-              onClick={() => setActiveCategory(category as TechCategory)}
+              onClick={() => setActiveCategory(category)}
               className={cn(
                 "whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition",
                 activeCategory === category && !query
@@ -86,7 +156,31 @@ export function TechnologySelector({
           ))}
         </div>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        {isLoading ? (
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-16 animate-pulse rounded-lg border border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-white/10"
+              />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="mt-5 rounded-lg border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-700 dark:text-red-200">
+            <p>{error}</p>
+            <Button
+              type="button"
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                void loadCatalog();
+              }}
+            >
+              Retry catalog
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
           {visibleOptions.map((technology) => {
             const isSelected = selected.some((item) => item.name === technology.name);
             return (
@@ -110,7 +204,8 @@ export function TechnologySelector({
               </AnimateButton>
             );
           })}
-        </div>
+          </div>
+        )}
       </AnimatedDiv>
 
       <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">

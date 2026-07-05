@@ -97,6 +97,10 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /me/repositories/{githubRepositoryId}/state:", "operationId: setRepositoryState"],
       ["  /me/repositories/{githubRepositoryId}/restore:", "operationId: restoreRepositoryState"],
       ["  /me/history:", "operationId: listMyHistory"],
+      ["  /me/profile:", "operationId: getMyProfile"],
+      ["  /me/technologies:", "operationId: getMyTechnologies"],
+      ["  /me/preferences:", "operationId: getMyPreferences"],
+      ["  /catalog/technologies:", "operationId: listTechnologies"],
       ["  /integrations/github/status:", "operationId: getGitHubIntegrationStatus"],
       ["  /integrations/github/sync:", "operationId: syncGitHubProfile"],
       ["  /integrations/github:", "operationId: disconnectGitHubIntegration"],
@@ -118,6 +122,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   const history = await import("../services/dotti/history");
   const githubIntegration = await import("../services/dotti/githubIntegration");
   const consents = await import("../services/dotti/consents");
+  const profile = await import("../services/dotti/profile");
 
   await t.test("matches service serializes filters and unwraps envelopes", async () => {
     resetFetchMock();
@@ -364,6 +369,123 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/integrations/github");
     assert.equal(lastRequest().init?.method, "DELETE");
     assert.equal(disconnect.connected, false);
+  });
+
+  await t.test("profile service uses profile, technologies, preferences, and catalog endpoints", async () => {
+    resetFetchMock();
+    enqueueData({
+      user: { id: 1, display_name: "Ada" },
+      profile: {
+        role: "Front-end Developer",
+        seniority: "mid",
+        goals: ["build_portfolio"],
+        onboarding_completed: true,
+      },
+    });
+    await profile.getMyProfile();
+
+    assert.equal(lastUrl().pathname, "/api/me/profile");
+
+    resetFetchMock();
+    enqueueData({
+      user: { id: 1, display_name: "Ada" },
+      profile: { role: "Back-end Developer" },
+    });
+    await profile.updateMyProfile({
+      display_name: "Ada",
+      role: "Back-end Developer",
+      seniority: "senior",
+      goals: ["first_contribution"],
+      onboarding_completed: true,
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/profile");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assertJsonBody({
+      display_name: "Ada",
+      role: "Back-end Developer",
+      seniority: "senior",
+      goals: ["first_contribution"],
+      onboarding_completed: true,
+    });
+
+    resetFetchMock();
+    enqueueData({ technologies: [] });
+    await profile.getMyTechnologies();
+
+    assert.equal(lastUrl().pathname, "/api/me/technologies");
+
+    resetFetchMock();
+    enqueueData({ technologies: [] });
+    await profile.replaceMyTechnologies([
+      {
+        technology_id: 10,
+        proficiency_level: "daily",
+        interest_level: "contribute",
+      },
+    ]);
+
+    assert.equal(lastUrl().pathname, "/api/me/technologies");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assertJsonBody({
+      technologies: [
+        {
+          technology_id: 10,
+          proficiency_level: "daily",
+          interest_level: "contribute",
+        },
+      ],
+    });
+
+    resetFetchMock();
+    enqueueData({
+      preferences: {
+        contribution_types: ["bug_fix"],
+        difficulty_levels: ["beginner"],
+        project_sizes: ["small"],
+        documentation_languages: ["any"],
+        organization_types: ["community"],
+      },
+    });
+    await profile.getMyPreferences();
+
+    assert.equal(lastUrl().pathname, "/api/me/preferences");
+
+    resetFetchMock();
+    enqueueData({ preferences: {} });
+    await profile.updateMyPreferences({
+      contribution_types: ["documentation"],
+      difficulty_levels: ["intermediate"],
+      project_sizes: ["medium"],
+      documentation_languages: ["en"],
+      organization_types: ["company"],
+      activity_window_days: 90,
+      minimum_stars: 0,
+      require_good_first_issue: false,
+      require_help_wanted: false,
+      default_sort_by: "best_match",
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/preferences");
+    assert.equal(lastRequest().init?.method, "PUT");
+
+    resetFetchMock();
+    enqueueData({
+      items: [],
+      pagination: { next_cursor: null },
+    });
+    await profile.listTechnologies({
+      active: true,
+      limit: 100,
+      category: "language",
+      q: "type",
+    });
+
+    assert.equal(lastUrl().pathname, "/api/catalog/technologies");
+    assert.equal(lastUrl().searchParams.get("active"), "true");
+    assert.equal(lastUrl().searchParams.get("limit"), "100");
+    assert.equal(lastUrl().searchParams.get("category"), "language");
+    assert.equal(lastUrl().searchParams.get("q"), "type");
   });
 
   await t.test("consent service uses LGPD consent endpoints", async () => {
