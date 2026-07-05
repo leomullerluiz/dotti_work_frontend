@@ -7,10 +7,10 @@ import { Button as AnimateButton } from "@/components/animate-ui/primitives/butt
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedArticle } from "@/components/ui/AnimatedSurface";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { Button, buttonClasses } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { PROJECT_STATUSES } from "@/data/constants";
-import { mockProjects } from "@/data/repositories";
 import { useHistory } from "@/hooks/useHistory";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import type { ProjectStatus } from "@/types";
@@ -22,17 +22,20 @@ import { RepositoryAvatar } from "./RepositoryAvatar";
 type Tab = "All" | ProjectStatus;
 
 export function SavedProjectsPage() {
-  const { savedProjects, removeProject, updateStatus } = useSavedProjects();
+  const {
+    error,
+    isLoading,
+    removeProject,
+    retryUserRepositories,
+    updateStatus,
+    userRepositories,
+  } = useSavedProjects();
   const { addHistory } = useHistory();
   const [activeTab, setActiveTab] = useState<Tab>("All");
 
-  const projects = savedProjects
-    .map((saved) => ({
-      saved,
-      project: mockProjects.find((project) => project.id === saved.repositoryId),
-    }))
-    .filter((item) => item.project)
-    .filter((item) => activeTab === "All" || item.saved.status === activeTab);
+  const projects = userRepositories.filter(
+    (item) => activeTab === "All" || item.saved.status === activeTab,
+  );
 
   return (
     <AppShell>
@@ -59,7 +62,28 @@ export function SavedProjectsPage() {
         ))}
       </div>
 
-      {projects.length === 0 ? (
+      {isLoading ? (
+        <div className="grid gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <SkeletonProjectCard key={index} />
+          ))}
+        </div>
+      ) : error ? (
+        <EmptyState
+          title="Could not load saved projects"
+          description={error}
+          action={
+            <Button
+              type="button"
+              onClick={() => {
+                void retryUserRepositories();
+              }}
+            >
+              Retry
+            </Button>
+          }
+        />
+      ) : projects.length === 0 ? (
         <EmptyState
           title="No saved projects here"
           description="Save repositories from Matches to build your contribution shortlist."
@@ -73,8 +97,44 @@ export function SavedProjectsPage() {
         <div className="grid gap-4">
           {projects.map(({ saved, project }) => {
             if (!project) {
-              return null;
+              return (
+                <AnimatedArticle
+                  key={saved.repositoryId}
+                  className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="font-semibold text-zinc-950 dark:text-white">
+                        Repository #{saved.repositoryId}
+                      </p>
+                      <p className="mt-2 text-sm text-zinc-500">
+                        Saved {formatDate(saved.savedAt)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <ProjectStatusSelect
+                        value={saved.status}
+                        onChange={(status) => {
+                          void updateStatus(saved.repositoryId, status);
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          void removeProject(saved.repositoryId);
+                        }}
+                      >
+                        <Trash2 size={15} />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </AnimatedArticle>
+              );
             }
+
             const repositoryName = `${project.owner}/${project.repo}`;
             return (
               <AnimatedArticle
@@ -109,7 +169,9 @@ export function SavedProjectsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <ProjectStatusSelect
                       value={saved.status}
-                      onChange={(status) => updateStatus(saved.repositoryId, status)}
+                      onChange={(status) => {
+                        void updateStatus(saved.repositoryId, status, project);
+                      }}
                     />
                     <a
                       href={project.githubUrl}
@@ -131,7 +193,9 @@ export function SavedProjectsPage() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeProject(saved.repositoryId)}
+                      onClick={() => {
+                        void removeProject(saved.repositoryId);
+                      }}
                     >
                       <Trash2 size={15} />
                       Remove

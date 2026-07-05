@@ -304,7 +304,7 @@ export function ProjectDetailPage({
     status,
     eventType,
   }: ContributionAction) => {
-    updateStatus(project.id, status);
+    await updateStatus(project.id, status, project);
     await registerRepositoryActivity(owner, repo, {
       event_type: eventType,
     }).catch(() => undefined);
@@ -334,12 +334,22 @@ export function ProjectDetailPage({
             <Button
               type="button"
               variant={saved ? "outline" : "primary"}
-              onClick={() => (saved ? removeProject(project.id) : saveProject(project.id))}
+              onClick={() => {
+                void (saved
+                  ? removeProject(project.id)
+                  : saveProject(project.id, project));
+              }}
             >
               {saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
               {saved ? "Saved" : "Save project"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => ignoreProject(project.id)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                void ignoreProject(project.id);
+              }}
+            >
               <X size={16} />
               Ignore
             </Button>

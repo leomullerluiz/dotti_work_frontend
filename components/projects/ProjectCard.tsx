@@ -129,7 +129,11 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
             type="button"
             variant={saved ? "outline" : "primary"}
             size="sm"
-            onClick={() => (saved ? removeProject(project.id) : saveProject(project.id))}
+            onClick={() => {
+              void (saved
+                ? removeProject(project.id)
+                : saveProject(project.id, project));
+            }}
           >
             {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
             {saved ? "Saved" : "Save"}
@@ -138,7 +142,9 @@ export function ProjectCard({ project }: { project: MatchedProject }) {
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => ignoreProject(project.id)}
+            onClick={() => {
+              void ignoreProject(project.id);
+            }}
           >
             <X size={15} />
             Ignore

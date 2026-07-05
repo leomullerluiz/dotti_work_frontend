@@ -215,6 +215,37 @@ export function apiRepositoryStateToProjectStatus(
   return repositoryStateToProjectStatus[state];
 }
 
+export function projectStatusToApiRepositoryState(
+  status: ProjectStatus,
+): ApiRepositoryStateValue {
+  switch (status) {
+    case "Saved":
+      return "saved";
+    case "Researching":
+      return "researching";
+    case "Working":
+      return "working";
+    case "Pull request sent":
+      return "pull_request_sent";
+    case "Contributed":
+      return "contributed";
+    case "Archived":
+      return "archived";
+    case "Ignored":
+      return "ignored";
+  }
+}
+
+export function adaptApiUserRepositoryStateToMatchedProject(
+  state: ApiUserRepositoryState,
+): MatchedProject | null {
+  if (!state.repository) {
+    return null;
+  }
+
+  return adaptApiRepositorySummaryToMatchedProject(state.repository);
+}
+
 function mergeMatchFields(item: ApiRepositoryMatchItem): ApiMatch {
   return {
     ...item.match,

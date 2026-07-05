@@ -11,9 +11,7 @@ import {
 } from "react";
 import { DEFAULT_FILTERS, STORAGE_KEYS } from "@/data/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import {
-  adaptApiMatchToMatchedProject,
-} from "@/services/dotti/adapters";
+import { adaptApiMatchToMatchedProject } from "@/services/dotti/adapters";
 import { DottiApiError } from "@/services/dotti/client";
 import { matchFiltersToApiParams } from "@/services/dotti/matchFilters";
 import {
@@ -22,7 +20,7 @@ import {
 } from "@/services/dotti/matches";
 import type { MatchedProject, TechnologyFilter } from "@/types";
 import { useAuth } from "./AuthContext";
-import { useHistory } from "./HistoryContext";
+import { useSavedProjects } from "./SavedProjectsContext";
 import { useToast } from "./ToastContext";
 
 type MatchesContextValue = {
@@ -37,9 +35,9 @@ type MatchesContextValue = {
   resetFilters: () => void;
   refreshMatches: () => void;
   retryMatches: () => void;
-  ignoreProject: (repositoryId: string) => void;
-  undoIgnore: (repositoryId: string) => void;
-  clearIgnored: () => void;
+  ignoreProject: (repositoryId: string) => Promise<void>;
+  undoIgnore: (repositoryId: string) => Promise<void>;
+  clearIgnored: () => Promise<void>;
   getProjectById: (repositoryId: string) => MatchedProject | undefined;
 };
 
@@ -156,17 +154,18 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     STORAGE_KEYS.filters,
     DEFAULT_FILTERS,
   );
-  const [ignoredProjectIds, setIgnoredProjectIds] = useLocalStorage<string[]>(
-    STORAGE_KEYS.ignoredProjects,
-    [],
-  );
   const [apiProjects, setApiProjects] = useState<MatchedProject[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status } = useAuth();
-  const { addHistory } = useHistory();
+  const {
+    clearIgnored,
+    ignoredProjectIds,
+    ignoreProject: ignoreRepository,
+    restoreProject,
+  } = useSavedProjects();
   const { showToast } = useToast();
 
   const loadMatches = useCallback(async () => {
@@ -273,38 +272,19 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
   }, [showToast]);
 
   const ignoreProject = useCallback(
-    (repositoryId: string) => {
+    async (repositoryId: string) => {
       const project = apiProjects.find((item) => item.id === repositoryId);
-      setIgnoredProjectIds((current) =>
-        current.includes(repositoryId) ? current : [repositoryId, ...current],
-      );
-
-      if (project) {
-        addHistory({
-          type: "Ignored project",
-          repositoryId,
-          repositoryName: `${project.owner}/${project.repo}`,
-        });
-      }
-      showToast("Project ignored", "info");
+      await ignoreRepository(repositoryId, project);
     },
-    [addHistory, apiProjects, setIgnoredProjectIds, showToast],
+    [apiProjects, ignoreRepository],
   );
 
   const undoIgnore = useCallback(
-    (repositoryId: string) => {
-      setIgnoredProjectIds((current) =>
-        current.filter((projectId) => projectId !== repositoryId),
-      );
-      showToast("Project restored");
+    async (repositoryId: string) => {
+      await restoreProject(repositoryId);
     },
-    [setIgnoredProjectIds, showToast],
+    [restoreProject],
   );
-
-  const clearIgnored = useCallback(() => {
-    setIgnoredProjectIds([]);
-    showToast("Ignored projects cleared", "info");
-  }, [setIgnoredProjectIds, showToast]);
 
   const getProjectById = useCallback(
     (repositoryId: string) =>

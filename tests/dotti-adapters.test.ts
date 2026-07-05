@@ -9,6 +9,7 @@ import {
   adaptApiRepositorySummaryToMatchedProject,
   adaptApiUserRepositoryState,
   apiRepositoryStateToProjectStatus,
+  projectStatusToApiRepositoryState,
 } from "../services/dotti/adapters";
 import type {
   ApiHistoryEvent,
@@ -241,6 +242,16 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     });
 
     assert.equal(apiRepositoryStateToProjectStatus("ignored"), "Ignored");
+    assert.equal(projectStatusToApiRepositoryState("Saved"), "saved");
+    assert.equal(projectStatusToApiRepositoryState("Researching"), "researching");
+    assert.equal(projectStatusToApiRepositoryState("Working"), "working");
+    assert.equal(
+      projectStatusToApiRepositoryState("Pull request sent"),
+      "pull_request_sent",
+    );
+    assert.equal(projectStatusToApiRepositoryState("Contributed"), "contributed");
+    assert.equal(projectStatusToApiRepositoryState("Archived"), "archived");
+    assert.equal(projectStatusToApiRepositoryState("Ignored"), "ignored");
     assert.deepEqual(adaptApiRepositoryStates([state]).map((item) => item.status), [
       "Pull request sent",
     ]);
