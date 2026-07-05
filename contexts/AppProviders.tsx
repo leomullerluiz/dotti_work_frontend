@@ -1,7 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AuthenticatedConsentBanner } from "@/components/privacy/AuthenticatedConsentBanner";
 import { AuthProvider } from "./AuthContext";
+import { ConsentProvider } from "./ConsentContext";
 import { HistoryProvider } from "./HistoryContext";
 import { MatchesProvider } from "./MatchesContext";
 import { ProfileProvider } from "./ProfileContext";
@@ -14,13 +16,18 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <HistoryProvider>
-            <ProfileProvider>
-              <SavedProjectsProvider>
-                <MatchesProvider>{children}</MatchesProvider>
-              </SavedProjectsProvider>
-            </ProfileProvider>
-          </HistoryProvider>
+          <ConsentProvider>
+            <HistoryProvider>
+              <ProfileProvider>
+                <SavedProjectsProvider>
+                  <MatchesProvider>
+                    {children}
+                    <AuthenticatedConsentBanner />
+                  </MatchesProvider>
+                </SavedProjectsProvider>
+              </ProfileProvider>
+            </HistoryProvider>
+          </ConsentProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

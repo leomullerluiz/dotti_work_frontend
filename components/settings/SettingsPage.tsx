@@ -6,6 +6,7 @@ import { Download, LogOut, Trash2, Upload } from "lucide-react";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PrivacyConsentSettings } from "@/components/privacy/PrivacyConsentSettings";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -342,6 +343,8 @@ export function SettingsPage() {
           </Button>
         </div>
       </AnimatedSection>
+
+      <PrivacyConsentSettings />
 
       <AnimatedSection className="mt-5 rounded-xl border border-red-200 bg-white p-5 shadow-sm dark:border-red-500/20 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">

@@ -11,20 +11,15 @@ import {
   DialogTitle,
 } from "@/components/animate-ui/primitives/radix/dialog";
 import { Button } from "@/components/ui/Button";
-import { STORAGE_KEYS } from "@/data/constants";
+import {
+  readStoredPrivacyConsent,
+  saveLocalConsentDecision,
+} from "@/services/dotti/consentStorage";
 
-const consentVersion = "2026-07-03";
 const consentStoreEventName = "dotti-consent-change";
 
 type ConsentDecision = "accepted" | "declined";
 type ConsentLanguage = "en" | "pt";
-
-type StoredConsent = {
-  decision: ConsentDecision;
-  source: "home";
-  version: string;
-  decidedAt: string;
-};
 
 const consentCopy: Record<
   ConsentLanguage,
@@ -72,26 +67,7 @@ const consentCopy: Record<
 };
 
 function readStoredConsent() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    const value = window.localStorage.getItem(STORAGE_KEYS.consent);
-
-    if (!value) {
-      return null;
-    }
-
-    const parsed = JSON.parse(value) as Partial<StoredConsent>;
-
-    return parsed.version === consentVersion &&
-      (parsed.decision === "accepted" || parsed.decision === "declined")
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
+  return readStoredPrivacyConsent();
 }
 
 function getConsentSnapshot() {
@@ -127,15 +103,7 @@ export function HomeDataConsentModal() {
   const copy = consentCopy[language];
 
   function saveDecision(decision: ConsentDecision) {
-    const consent: StoredConsent = {
-      decision,
-      source: "home",
-      version: consentVersion,
-      decidedAt: new Date().toISOString(),
-    };
-
-    window.localStorage.setItem(STORAGE_KEYS.consent, JSON.stringify(consent));
-    window.dispatchEvent(new Event(consentStoreEventName));
+    saveLocalConsentDecision(decision);
   }
 
   return (

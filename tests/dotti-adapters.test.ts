@@ -23,6 +23,11 @@ import type {
   ApiRepositorySummary,
   ApiUserRepositoryState,
 } from "../services/dotti/types";
+import {
+  consentByType,
+  hasGrantedConsent,
+  isOptionalConsent,
+} from "../services/dotti/consentPreferences";
 
 test("dotti API adapters normalize backend DTOs into visual types", async (t) => {
   await t.test("adapts API profile, technologies, and preferences into DeveloperProfile", () => {
@@ -593,5 +598,32 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     assert.equal(event.repositoryId, undefined);
     assert.equal(event.repositoryName, undefined);
     assert.equal(event.metadata, undefined);
+  });
+
+  await t.test("normalizes consent preferences and optional grant checks", () => {
+    const consents = [
+      {
+        type: "analytics" as const,
+        status: "granted" as const,
+        policy_version: "2026-07-04",
+        source: "settings" as const,
+        created_at: "2026-07-04 12:00:00",
+        revoked_at: null,
+      },
+      {
+        type: "marketing" as const,
+        status: "revoked" as const,
+        policy_version: "2026-07-04",
+        source: "settings" as const,
+        created_at: "2026-07-04 12:00:00",
+        revoked_at: "2026-07-04 13:00:00",
+      },
+    ];
+
+    assert.equal(consentByType(consents).get("analytics")?.status, "granted");
+    assert.equal(hasGrantedConsent(consents, "analytics"), true);
+    assert.equal(hasGrantedConsent(consents, "marketing"), false);
+    assert.equal(isOptionalConsent("analytics"), true);
+    assert.equal(isOptionalConsent("essential"), false);
   });
 });

@@ -109,6 +109,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /integrations/github/sync:", "operationId: syncGitHubProfile"],
       ["  /integrations/github:", "operationId: disconnectGitHubIntegration"],
       ["  /me/consents:", "operationId: listMyConsents"],
+      ["  /me/consents:", "operationId: grantMyConsent"],
       ["  /me/consents/{type}:", "operationId: revokeMyConsent"],
     ].forEach(([path, operationId]) => {
       assert.ok(openapi.includes(path), `Expected ${path} in openapi.yaml`);
