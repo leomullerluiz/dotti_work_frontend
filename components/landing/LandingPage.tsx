@@ -5,11 +5,9 @@ import {
   CheckCircle2,
   GitBranch,
   Sparkles,
-  Star,
 } from "lucide-react";
 import { buttonClasses } from "@/components/ui/buttonStyles";
 import { cn } from "@/utils/cn";
-import { formatNumber } from "@/utils/format";
 import { HomeDataConsentModal } from "./HomeDataConsentModal";
 import { SmoothAnchorLink } from "./SmoothAnchorLink";
 import { Icons } from "../ui/Icons";
@@ -47,39 +45,21 @@ const steps = [
   ["Start contributing", "Save, research, and track your contribution flow."],
 ];
 
-const featuredMatches = [
+const matchSignals = [
   {
-    id: "preview-react",
-    owner: "open-source",
-    repo: "react-toolkit",
-    description:
-      "A component toolkit with accessible issues, active maintainers, and a strong TypeScript surface.",
-    languages: ["TypeScript", "React", "CSS"],
-    matchScore: 94,
-    stars: 18400,
-    goodFirstIssues: 12,
+    title: "Profile fit",
+    description: "Ranks repositories against stack, seniority, goals, and preferred contribution style.",
+    tags: ["Stack", "Seniority", "Goals"],
   },
   {
-    id: "preview-api",
-    owner: "community-labs",
-    repo: "api-starter",
-    description:
-      "A backend starter project with documented contribution paths and beginner-friendly labels.",
-    languages: ["Node.js", "OpenAPI", "Docker"],
-    matchScore: 89,
-    stars: 7200,
-    goodFirstIssues: 8,
+    title: "Issue readiness",
+    description: "Highlights beginner-friendly labels, contribution type, difficulty, and issue freshness.",
+    tags: ["Labels", "Difficulty", "Freshness"],
   },
   {
-    id: "preview-docs",
-    owner: "docs-space",
-    repo: "developer-handbook",
-    description:
-      "A documentation-first repository for improving guides, examples, and onboarding material.",
-    languages: ["Markdown", "JavaScript", "GitHub Actions"],
-    matchScore: 86,
-    stars: 5100,
-    goodFirstIssues: 6,
+    title: "Repository health",
+    description: "Surfaces activity, docs, license, tests, and maintainer signals from the API.",
+    tags: ["Activity", "Docs", "License"],
   },
 ];
 
@@ -163,33 +143,26 @@ export function LandingPage() {
               <Sparkles size={20} className="text-coral-500" />
             </div>
             <div className="mt-4 space-y-3">
-              {featuredMatches.map((project) => (
+              {matchSignals.map((signal) => (
                 <div
-                  key={project.id}
+                  key={signal.title}
                   className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold">{project.owner}/{project.repo}</p>
+                      <p className="font-semibold">{signal.title}</p>
                       <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        {project.description}
+                        {signal.description}
                       </p>
                     </div>
-                    <StaticBadge tone="success">{project.matchScore}%</StaticBadge>
+                    <StaticBadge tone="success">API</StaticBadge>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {project.languages.slice(0, 3).map((language) => (
-                      <StaticBadge key={language} tone="blue">
-                        {language}
+                    {signal.tags.map((tag) => (
+                      <StaticBadge key={tag} tone="blue">
+                        {tag}
                       </StaticBadge>
                     ))}
-                  </div>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
-                    <span className="flex items-center gap-1">
-                      <Star size={14} />
-                      {formatNumber(project.stars)}
-                    </span>
-                    <span>{project.goodFirstIssues} good first issues</span>
                   </div>
                 </div>
               ))}

@@ -40,7 +40,6 @@ function readSourceFiles() {
 
 test("acceptance criteria keep authenticated areas off repository mocks", () => {
   const offenders = readSourceFiles()
-    .filter(({ path }) => !path.startsWith("components/landing/"))
     .filter(({ text }) => /data\/repositories|mockProjects/.test(text))
     .map(({ path }) => path);
 
