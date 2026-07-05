@@ -56,3 +56,9 @@ export function logoutCurrentSession() {
     method: "POST",
   });
 }
+
+export function logoutAllSessions() {
+  return dottiRequest<{ revoked: boolean }>("/auth/logout-all", {
+    method: "POST",
+  });
+}

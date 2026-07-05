@@ -98,8 +98,12 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /me/repositories/{githubRepositoryId}/restore:", "operationId: restoreRepositoryState"],
       ["  /me/history:", "operationId: listMyHistory"],
       ["  /me/profile:", "operationId: getMyProfile"],
+      ["  /me/import-local-data:", "operationId: importLocalData"],
+      ["  /me/export:", "operationId: exportMyData"],
+      ["  /me/account:", "operationId: deleteMyAccount"],
       ["  /me/technologies:", "operationId: getMyTechnologies"],
       ["  /me/preferences:", "operationId: getMyPreferences"],
+      ["  /auth/logout-all:", "operationId: logoutAllSessions"],
       ["  /catalog/technologies:", "operationId: listTechnologies"],
       ["  /integrations/github/status:", "operationId: getGitHubIntegrationStatus"],
       ["  /integrations/github/sync:", "operationId: syncGitHubProfile"],
@@ -116,6 +120,8 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   });
 
   const client = await import("../services/dotti/client");
+  const account = await import("../services/dotti/account");
+  const auth = await import("../services/dotti/auth");
   const matches = await import("../services/dotti/matches");
   const repositories = await import("../services/dotti/repositories");
   const repositoryStates = await import("../services/dotti/repositoryStates");
@@ -487,6 +493,135 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().searchParams.get("limit"), "100");
     assert.equal(lastUrl().searchParams.get("category"), "language");
     assert.equal(lastUrl().searchParams.get("q"), "type");
+  });
+
+  await t.test("account data service uses export, import, delete, and logout-all endpoints", async () => {
+    resetFetchMock();
+    enqueueData({
+      user: { id: 1, login: "octocat" },
+      profile: { onboarding_completed: true },
+      technologies: [],
+      preferences: {
+        contribution_types: [],
+        difficulty_levels: [],
+        project_sizes: [],
+        documentation_languages: [],
+        organization_types: [],
+      },
+      repository_states: [],
+      history: [],
+    });
+    const exported = await account.exportMyData();
+
+    assert.equal(lastUrl().pathname, "/api/me/export");
+    assert.equal(exported.user.login, "octocat");
+
+    resetFetchMock();
+    enqueueData({
+      user: { id: 1, login: "octocat" },
+      profile: { onboarding_completed: true },
+      technologies: [],
+      preferences: {
+        contribution_types: [],
+        difficulty_levels: [],
+        project_sizes: [],
+        documentation_languages: [],
+        organization_types: [],
+      },
+      repository_states: [],
+      history: [],
+    });
+    await account.importLocalData({
+      profile: {
+        display_name: "Octo Cat",
+        role: "Maintainer",
+        seniority: "senior",
+        goals: ["build_portfolio"],
+        onboarding_completed: true,
+      },
+      technologies: [
+        {
+          technology_id: 10,
+          proficiency_level: "daily",
+          interest_level: "contribute",
+        },
+      ],
+      preferences: {
+        contribution_types: ["bug_fix"],
+        difficulty_levels: ["beginner"],
+        project_sizes: ["small"],
+        documentation_languages: ["any"],
+        organization_types: ["community"],
+      },
+      repository_states: [
+        {
+          github_repository_id: 123,
+          state: "saved",
+          notes: null,
+        },
+      ],
+      history: [
+        {
+          event_type: "opened_github",
+          github_repository_id: 123,
+        },
+      ],
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/import-local-data");
+    assert.equal(lastRequest().init?.method, "POST");
+    assertJsonBody({
+      profile: {
+        display_name: "Octo Cat",
+        role: "Maintainer",
+        seniority: "senior",
+        goals: ["build_portfolio"],
+        onboarding_completed: true,
+      },
+      technologies: [
+        {
+          technology_id: 10,
+          proficiency_level: "daily",
+          interest_level: "contribute",
+        },
+      ],
+      preferences: {
+        contribution_types: ["bug_fix"],
+        difficulty_levels: ["beginner"],
+        project_sizes: ["small"],
+        documentation_languages: ["any"],
+        organization_types: ["community"],
+      },
+      repository_states: [
+        {
+          github_repository_id: 123,
+          state: "saved",
+          notes: null,
+        },
+      ],
+      history: [
+        {
+          event_type: "opened_github",
+          github_repository_id: 123,
+        },
+      ],
+    });
+
+    resetFetchMock();
+    enqueueData({ deleted: true });
+    const deleted = await account.deleteMyAccount();
+
+    assert.equal(lastUrl().pathname, "/api/me/account");
+    assert.equal(lastRequest().init?.method, "DELETE");
+    assert.equal(deleted.deleted, true);
+
+    resetFetchMock();
+    enqueueData({ revoked: true });
+    const loggedOut = await auth.logoutAllSessions();
+
+    assert.equal(lastUrl().pathname, "/api/auth/logout-all");
+    assert.equal(lastRequest().init?.method, "POST");
+    assert.equal(loggedOut.revoked, true);
   });
 
   await t.test("consent service uses LGPD consent endpoints", async () => {

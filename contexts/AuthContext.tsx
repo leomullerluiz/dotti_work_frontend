@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   getOptionalAuthenticatedUser,
+  logoutAllSessions,
   logoutCurrentSession,
   type AuthMeData,
 } from "@/services/dotti/auth";
@@ -29,6 +30,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   refreshSession: () => Promise<AuthMeData | null>;
   logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,6 +66,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await logoutCurrentSession();
+      setSession(null);
+      setStatus("unauthenticated");
+      setError(null);
+    } catch (logoutError) {
+      if (isUnauthorizedError(logoutError)) {
+        setSession(null);
+        setStatus("unauthenticated");
+        setError(null);
+        return;
+      }
+
+      throw logoutError;
+    }
+  }, []);
+
+  const logoutAll = useCallback(async () => {
+    try {
+      await logoutAllSessions();
       setSession(null);
       setStatus("unauthenticated");
       setError(null);
@@ -115,8 +135,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: Boolean(session) && status === "authenticated",
       refreshSession,
       logout,
+      logoutAll,
     }),
-    [error, logout, refreshSession, session, status],
+    [error, logout, logoutAll, refreshSession, session, status],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

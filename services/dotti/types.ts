@@ -340,6 +340,37 @@ export type ApiHistoryEvent = {
   created_at?: string;
 };
 
+export type ApiRepositoryStateImportInput = {
+  github_repository_id: number;
+  owner_login?: string;
+  repository_name?: string;
+  state: ApiRepositoryStateValue;
+  notes?: string | null;
+};
+
+export type ApiActivityEventImportInput = {
+  event_type: ApiActivityEventType;
+  github_repository_id?: number | null;
+};
+
+export type ApiLocalDataImport = {
+  profile?: ApiProfileUpdateInput;
+  technologies?: ApiUserTechnologyInput[];
+  preferences?: ApiUserPreferenceInput;
+  repository_states?: ApiRepositoryStateImportInput[];
+  history?: ApiActivityEventImportInput[];
+};
+
+export type ApiUserDataExport = {
+  user: ApiUser;
+  profile: ApiUserProfile;
+  technologies: ApiUserTechnology[];
+  preferences: ApiUserPreference;
+  repository_states: ApiUserRepositoryState[];
+  history: ApiHistoryEvent[];
+  skipped?: Record<string, unknown>;
+};
+
 export type ApiGitHubIntegrationStatus = {
   connected?: boolean;
   login?: string | null;

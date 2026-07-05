@@ -16,6 +16,7 @@ import type {
   SkillLevel,
   TechCategory,
   UserTechnology,
+  LocalAppData,
 } from "@/types";
 import type {
   ApiActivityEventType,
@@ -28,6 +29,9 @@ import type {
   ApiProfileUpdateInput,
   ApiProficiencyLevel,
   ApiProjectSize,
+  ApiActivityEventImportInput,
+  ApiLocalDataImport,
+  ApiRepositoryStateImportInput,
   ApiRepositoryDetail,
   ApiRepositoryHealth,
   ApiRepositoryIssue,
@@ -84,6 +88,15 @@ const activityEventToHistoryEvent: Record<ApiActivityEventType, HistoryEventType
   sent_pull_request: "Marked as contributing",
   marked_contributed: "Marked as contributed",
   restored_project: "Saved project",
+};
+
+const historyEventToApi: Partial<Record<HistoryEventType, ApiActivityEventType>> = {
+  "Viewed project": "viewed_project",
+  "Saved project": "saved_project",
+  "Ignored project": "ignored_project",
+  "Opened GitHub": "opened_github",
+  "Marked as contributing": "started_contributing",
+  "Marked as contributed": "marked_contributed",
 };
 
 const defaultPreferences: MatchPreferences = {
@@ -452,6 +465,101 @@ export function projectStatusToApiRepositoryState(
   }
 }
 
+export type LocalDataImportConversion = {
+  input: ApiLocalDataImport;
+  skipped: {
+    technologies: string[];
+    repositoryStates: string[];
+    history: string[];
+  };
+};
+
+export function localAppDataToApiImportInput(
+  data: LocalAppData,
+  catalog: ApiTechnology[],
+): LocalDataImportConversion {
+  const skipped = {
+    technologies: [] as string[],
+    repositoryStates: [] as string[],
+    history: [] as string[],
+  };
+  const repositoryStates = new Map<number, ApiRepositoryStateImportInput>();
+
+  data.savedProjects.forEach((savedProject) => {
+    const githubRepositoryId = parseGitHubRepositoryId(savedProject.repositoryId);
+
+    if (githubRepositoryId === null) {
+      skipped.repositoryStates.push(savedProject.repositoryId);
+      return;
+    }
+
+    repositoryStates.set(githubRepositoryId, {
+      github_repository_id: githubRepositoryId,
+      state: projectStatusToApiRepositoryState(savedProject.status),
+      notes: null,
+    });
+  });
+
+  data.ignoredProjectIds.forEach((repositoryId) => {
+    const githubRepositoryId = parseGitHubRepositoryId(repositoryId);
+
+    if (githubRepositoryId === null) {
+      skipped.repositoryStates.push(repositoryId);
+      return;
+    }
+
+    repositoryStates.set(githubRepositoryId, {
+      github_repository_id: githubRepositoryId,
+      state: "ignored",
+      notes: null,
+    });
+  });
+
+  const history = data.history.reduce<ApiActivityEventImportInput[]>(
+    (items, event) => {
+      const eventType = historyEventToApi[event.type];
+
+      if (!eventType) {
+        skipped.history.push(event.id);
+        return items;
+      }
+
+      const githubRepositoryId = event.repositoryId
+        ? parseGitHubRepositoryId(event.repositoryId)
+        : null;
+
+      if (event.repositoryId && githubRepositoryId === null) {
+        skipped.history.push(event.id);
+        return items;
+      }
+
+      items.push({
+        event_type: eventType,
+        github_repository_id: githubRepositoryId,
+      });
+      return items;
+    },
+    [],
+  );
+
+  const input: ApiLocalDataImport = {
+    repository_states: Array.from(repositoryStates.values()).slice(0, 200),
+    history: history.slice(0, 300),
+  };
+
+  if (data.profile) {
+    const { technologies, skippedTechnologies } =
+      developerProfileToApiTechnologyInputs(data.profile, catalog);
+
+    input.profile = developerProfileToApiProfileInput(data.profile);
+    input.technologies = technologies;
+    input.preferences = matchPreferencesToApiInput(data.profile.preferences);
+    skipped.technologies = skippedTechnologies;
+  }
+
+  return { input, skipped };
+}
+
 export function adaptApiUserRepositoryStateToMatchedProject(
   state: ApiUserRepositoryState,
 ): MatchedProject | null {
@@ -460,6 +568,15 @@ export function adaptApiUserRepositoryStateToMatchedProject(
   }
 
   return adaptApiRepositorySummaryToMatchedProject(state.repository);
+}
+
+function parseGitHubRepositoryId(value: string) {
+  const normalized = Number(value);
+  if (!Number.isSafeInteger(normalized) || normalized <= 0) {
+    return null;
+  }
+
+  return normalized;
 }
 
 function mergeMatchFields(item: ApiRepositoryMatchItem): ApiMatch {

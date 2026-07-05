@@ -11,6 +11,7 @@ import {
   adaptApiUserRepositoryState,
   developerProfileToApiProfileInput,
   developerProfileToApiTechnologyInputs,
+  localAppDataToApiImportInput,
   matchPreferencesToApiInput,
   apiRepositoryStateToProjectStatus,
   projectStatusToApiRepositoryState,
@@ -156,6 +157,117 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
       require_good_first_issue: false,
       require_help_wanted: false,
       default_sort_by: "best_match",
+    });
+  });
+
+  await t.test("converts local app data into API import payload and skipped summary", () => {
+    const conversion = localAppDataToApiImportInput(
+      {
+        profile: {
+          name: "Ada Lovelace",
+          role: "Full Stack Developer",
+          seniority: "Senior",
+          goal: "Build portfolio",
+          technologies: [
+            {
+              name: "TypeScript",
+              category: "Languages",
+              level: "Daily use",
+            },
+            {
+              name: "Unknown Tech",
+              category: "Tools",
+              level: "Basic",
+            },
+          ],
+          preferences: {
+            contributionTypes: ["Bug fix", "Documentation"],
+            difficulty: "Beginner",
+            projectSize: "Small",
+            activityLevel: "Very active",
+            preferredLanguage: "Any",
+            organizationType: "Community",
+          },
+          completedOnboarding: true,
+          updatedAt: "2026-07-05T12:00:00Z",
+        },
+        savedProjects: [
+          {
+            repositoryId: "123",
+            status: "Working",
+            savedAt: "2026-07-01T10:00:00Z",
+            updatedAt: "2026-07-04T10:00:00Z",
+          },
+          {
+            repositoryId: "owner/repo",
+            status: "Saved",
+            savedAt: "2026-07-01T10:00:00Z",
+            updatedAt: "2026-07-04T10:00:00Z",
+          },
+        ],
+        ignoredProjectIds: ["456", "not-a-number"],
+        history: [
+          {
+            id: "history-1",
+            type: "Opened GitHub",
+            repositoryId: "123",
+            createdAt: "2026-07-04T12:00:00Z",
+          },
+          {
+            id: "history-2",
+            type: "Viewed project",
+            repositoryId: "owner/repo",
+            createdAt: "2026-07-04T12:00:00Z",
+          },
+        ],
+        theme: "system",
+      },
+      [
+        {
+          id: 10,
+          slug: "typescript",
+          name: "TypeScript",
+          category: "language",
+        },
+      ],
+    );
+
+    assert.deepEqual(conversion.input.profile, {
+      display_name: "Ada Lovelace",
+      role: "Full Stack Developer",
+      seniority: "senior",
+      goals: ["build_portfolio"],
+      onboarding_completed: true,
+    });
+    assert.deepEqual(conversion.input.technologies, [
+      {
+        technology_id: 10,
+        proficiency_level: "daily",
+        interest_level: "contribute",
+      },
+    ]);
+    assert.deepEqual(conversion.input.repository_states, [
+      {
+        github_repository_id: 123,
+        state: "working",
+        notes: null,
+      },
+      {
+        github_repository_id: 456,
+        state: "ignored",
+        notes: null,
+      },
+    ]);
+    assert.deepEqual(conversion.input.history, [
+      {
+        event_type: "opened_github",
+        github_repository_id: 123,
+      },
+    ]);
+    assert.deepEqual(conversion.skipped, {
+      technologies: ["Unknown Tech"],
+      repositoryStates: ["owner/repo", "not-a-number"],
+      history: ["history-2"],
     });
   });
 
