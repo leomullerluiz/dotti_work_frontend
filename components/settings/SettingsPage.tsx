@@ -28,7 +28,7 @@ import {
   exportMyData,
   importLocalData,
 } from "@/services/dotti/account";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import { listTechnologies } from "@/services/dotti/profile";
 import type { LocalAppData } from "@/types";
 import { downloadJson } from "@/utils/format";
@@ -37,23 +37,11 @@ import { useToast } from "@/contexts/ToastContext";
 const DELETE_CONFIRMATION = "DELETE MY ACCOUNT";
 
 function messageForAccountError(error: unknown, fallback: string) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in again to manage account data.";
-    }
-
-    if (error.status === 422) {
-      return "Some imported data was rejected by the API.";
-    }
-
-    if (error.status === 403) {
-      return "This session cannot complete that account action.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error ? error.message : fallback;
+  return apiErrorMessage(error, {
+    fallback,
+    unauthorized: "Your session expired. Sign in again to manage account data.",
+    validation: "Some imported data was rejected by the API.",
+  });
 }
 
 function skippedSummary(conversion: LocalDataImportConversion) {
@@ -99,6 +87,7 @@ export function SettingsPage() {
   const [logoutAllOpen, setLogoutAllOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [accountError, setAccountError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<
     | "export"
     | "import"
@@ -165,16 +154,16 @@ export function SettingsPage() {
     }
 
     setPendingAction("export");
+    setAccountError(null);
 
     try {
       const exportedData = await exportMyData();
       downloadJson("dotti-account-data.json", exportedData);
       showToast("Account data exported");
     } catch (exportError) {
-      showToast(
-        messageForAccountError(exportError, "Could not export account data."),
-        "error",
-      );
+      const message = messageForAccountError(exportError, "Could not export account data.");
+      setAccountError(message);
+      showToast(message, "error");
     } finally {
       setPendingAction(null);
     }
@@ -186,6 +175,7 @@ export function SettingsPage() {
     }
 
     setPendingAction("import");
+    setAccountError(null);
 
     try {
       const parsed = JSON.parse(json) as Partial<LocalAppData>;
@@ -221,10 +211,9 @@ export function SettingsPage() {
       );
       return true;
     } catch (importError) {
-      showToast(
-        messageForAccountError(importError, "Could not import account data."),
-        "error",
-      );
+      const message = messageForAccountError(importError, "Could not import account data.");
+      setAccountError(message);
+      showToast(message, "error");
       return false;
     } finally {
       setPendingAction(null);
@@ -233,16 +222,16 @@ export function SettingsPage() {
 
   const handleLogoutAll = async () => {
     setPendingAction("logout-all");
+    setAccountError(null);
 
     try {
       await logoutAll();
       showToast("All sessions revoked", "info");
       router.replace("/login");
     } catch (logoutError) {
-      showToast(
-        messageForAccountError(logoutError, "Could not revoke all sessions."),
-        "error",
-      );
+      const message = messageForAccountError(logoutError, "Could not revoke all sessions.");
+      setAccountError(message);
+      showToast(message, "error");
     } finally {
       setPendingAction(null);
       setLogoutAllOpen(false);
@@ -256,6 +245,7 @@ export function SettingsPage() {
     }
 
     setPendingAction("delete");
+    setAccountError(null);
 
     try {
       const response = await deleteMyAccount();
@@ -268,10 +258,9 @@ export function SettingsPage() {
       showToast("Account deleted. Local browser data was cleared.", "info");
       router.replace("/login");
     } catch (deleteError) {
-      showToast(
-        messageForAccountError(deleteError, "Could not delete the account."),
-        "error",
-      );
+      const message = messageForAccountError(deleteError, "Could not delete the account.");
+      setAccountError(message);
+      showToast(message, "error");
     } finally {
       setPendingAction(null);
       setDeleteOpen(false);
@@ -342,6 +331,11 @@ export function SettingsPage() {
             Log out all sessions
           </Button>
         </div>
+        {accountError ? (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200">
+            {accountError}
+          </div>
+        ) : null}
       </AnimatedSection>
 
       <PrivacyConsentSettings />

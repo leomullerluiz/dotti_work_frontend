@@ -13,6 +13,7 @@ import {
   buildGitHubOAuthStartUrl,
   DottiApiError,
 } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import {
   disconnectGitHubIntegration,
   getGitHubIntegrationStatus,
@@ -32,10 +33,6 @@ type LoadState = "idle" | "loading" | "error";
 
 function messageForGitHubError(error: unknown, fallback: string) {
   if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in with GitHub again.";
-    }
-
     if (error.status === 403) {
       return "This session cannot manage the GitHub integration.";
     }
@@ -44,14 +41,14 @@ function messageForGitHubError(error: unknown, fallback: string) {
       return "No GitHub integration was found for this account.";
     }
 
-    if (error.status === 502 || error.status === 503) {
-      return "GitHub or the API is temporarily unavailable. Please retry shortly.";
-    }
-
-    return error.message;
   }
 
-  return error instanceof Error ? error.message : fallback;
+  return apiErrorMessage(error, {
+    fallback,
+    unauthorized: "Your session expired. Sign in with GitHub again.",
+    validation: "The GitHub integration request was rejected by the API.",
+    unavailable: "GitHub or the API is temporarily unavailable. Please retry shortly.",
+  });
 }
 
 function disconnectedIntegration(): ApiGitHubIntegrationStatus {

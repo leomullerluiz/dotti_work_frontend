@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import {
   grantConsent,
   listConsents,
@@ -44,29 +44,11 @@ type ConsentContextValue = {
 const ConsentContext = createContext<ConsentContextValue | null>(null);
 
 function messageForConsentError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in again to manage privacy consent.";
-    }
-
-    if (error.status === 403) {
-      return "This session cannot update privacy consent.";
-    }
-
-    if (error.status === 404) {
-      return "This consent record was not found.";
-    }
-
-    if (error.status === 422) {
-      return "The consent update was rejected by the API.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error
-    ? error.message
-    : "Could not update privacy consent.";
+  return apiErrorMessage(error, {
+    fallback: "Could not update privacy consent.",
+    unauthorized: "Your session expired. Sign in again to manage privacy consent.",
+    validation: "The consent update was rejected by the API.",
+  });
 }
 
 function mergeConsent(current: ApiConsent[], next: ApiConsent) {

@@ -12,7 +12,7 @@ import {
 import { STORAGE_KEYS } from "@/data/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { adaptApiHistoryEvents } from "@/services/dotti/adapters";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import {
   clearHistory as clearHistoryFromApi,
   listHistory,
@@ -41,17 +41,11 @@ type HistoryContextValue = {
 const HistoryContext = createContext<HistoryContextValue | null>(null);
 
 function messageForHistoryError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in again to load history.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error
-    ? error.message
-    : "Could not load interaction history.";
+  return apiErrorMessage(error, {
+    fallback: "Could not load interaction history.",
+    unauthorized: "Your session expired. Sign in again to load history.",
+    validation: "The history request was rejected by the API.",
+  });
 }
 
 function createLocalHistoryEvent(event: HistoryInput): HistoryEvent {

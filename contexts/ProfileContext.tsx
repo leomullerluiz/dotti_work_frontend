@@ -17,7 +17,7 @@ import {
   developerProfileToApiTechnologyInputs,
   matchPreferencesToApiInput,
 } from "@/services/dotti/adapters";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import {
   getMyPreferences,
   getMyProfile,
@@ -46,19 +46,11 @@ type ProfileContextValue = {
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
 function messageForProfileError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in again to load your profile.";
-    }
-
-    if (error.status === 422) {
-      return "Some profile fields were rejected by the API.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error ? error.message : "Could not load profile.";
+  return apiErrorMessage(error, {
+    fallback: "Could not load profile.",
+    unauthorized: "Your session expired. Sign in again to load your profile.",
+    validation: "Some profile fields were rejected by the API.",
+  });
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {

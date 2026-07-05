@@ -12,7 +12,7 @@ import {
 import { DEFAULT_FILTERS, STORAGE_KEYS } from "@/data/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { adaptApiMatchToMatchedProject } from "@/services/dotti/adapters";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import { matchFiltersToApiParams } from "@/services/dotti/matchFilters";
 import {
   listMatches,
@@ -126,21 +126,12 @@ function filterProjects(
 }
 
 function messageForMatchesError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 429) {
-      return "Match refresh is temporarily rate limited. Try again in a few minutes.";
-    }
-
-    if (error.status === 502 || error.status === 503) {
-      return "GitHub or the matching API is temporarily unavailable. Please retry shortly.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error
-    ? error.message
-    : "Could not load matches from the API.";
+  return apiErrorMessage(error, {
+    fallback: "Could not load matches from the API.",
+    rateLimited: "Match refresh is temporarily rate limited. Try again in a few minutes.",
+    unavailable: "GitHub or the matching API is temporarily unavailable. Please retry shortly.",
+    validation: "The match filters were rejected by the API.",
+  });
 }
 
 function uniqueLanguages(projects: MatchedProject[]) {

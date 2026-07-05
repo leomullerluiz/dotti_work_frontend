@@ -27,6 +27,7 @@ import {
   adaptApiRepositoryDetailToMatchedProject,
   adaptApiRepositoryIssue,
 } from "@/services/dotti/adapters";
+import { apiErrorMessage, apiErrorTitle } from "@/services/dotti/apiErrorState";
 import { DottiApiError } from "@/services/dotti/client";
 import {
   getRepository,
@@ -43,21 +44,15 @@ import { RepositoryHealthCard } from "./RepositoryHealthCard";
 import { StackBadge } from "./StackBadge";
 
 function messageForRepositoryError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 404) {
-      return "Repository not found.";
-    }
-
-    if (error.status === 502 || error.status === 503) {
-      return "GitHub or the API is temporarily unavailable. Please retry shortly.";
-    }
-
-    return error.message;
+  if (error instanceof DottiApiError && error.status === 404) {
+    return "Repository not found.";
   }
 
-  return error instanceof Error
-    ? error.message
-    : "Could not load repository details.";
+  return apiErrorMessage(error, {
+    fallback: "Could not load repository details.",
+    unavailable: "GitHub or the API is temporarily unavailable. Please retry shortly.",
+    validation: "The repository request was rejected by the API.",
+  });
 }
 
 function isNotFound(error: unknown) {
@@ -85,7 +80,9 @@ export function ProjectDetailPage({
   const [isRepositoryLoading, setIsRepositoryLoading] = useState(true);
   const [isIssuesLoading, setIsIssuesLoading] = useState(true);
   const [repositoryError, setRepositoryError] = useState<string | null>(null);
+  const [repositoryErrorTitle, setRepositoryErrorTitle] = useState("Could not load repository");
   const [issuesError, setIssuesError] = useState<string | null>(null);
+  const [issuesErrorTitle, setIssuesErrorTitle] = useState("Could not load issues");
   const [repositoryNotFound, setRepositoryNotFound] = useState(false);
 
   const repositoryName = `${owner}/${repo}`;
@@ -93,6 +90,7 @@ export function ProjectDetailPage({
   const loadRepository = useCallback(async () => {
     setIsRepositoryLoading(true);
     setRepositoryError(null);
+    setRepositoryErrorTitle("Could not load repository");
     setRepositoryNotFound(false);
 
     try {
@@ -112,6 +110,7 @@ export function ProjectDetailPage({
     } catch (loadError) {
       setRepositoryProject(null);
       setRepositoryNotFound(isNotFound(loadError));
+      setRepositoryErrorTitle(apiErrorTitle(loadError, "Could not load repository"));
       setRepositoryError(messageForRepositoryError(loadError));
     } finally {
       setIsRepositoryLoading(false);
@@ -121,6 +120,7 @@ export function ProjectDetailPage({
   const loadIssues = useCallback(async () => {
     setIsIssuesLoading(true);
     setIssuesError(null);
+    setIssuesErrorTitle("Could not load issues");
 
     try {
       const response = await listRepositoryIssues(owner, repo, {
@@ -129,6 +129,7 @@ export function ProjectDetailPage({
       setIssues(response.items.map(adaptApiRepositoryIssue));
     } catch (loadError) {
       setIssues([]);
+      setIssuesErrorTitle(apiErrorTitle(loadError, "Could not load issues"));
       setIssuesError(messageForRepositoryError(loadError));
     } finally {
       setIsIssuesLoading(false);
@@ -141,6 +142,7 @@ export function ProjectDetailPage({
     async function run() {
       setIsRepositoryLoading(true);
       setRepositoryError(null);
+      setRepositoryErrorTitle("Could not load repository");
       setRepositoryNotFound(false);
 
       try {
@@ -168,6 +170,7 @@ export function ProjectDetailPage({
 
         setRepositoryProject(null);
         setRepositoryNotFound(isNotFound(loadError));
+        setRepositoryErrorTitle(apiErrorTitle(loadError, "Could not load repository"));
         setRepositoryError(messageForRepositoryError(loadError));
       } finally {
         if (isCurrent) {
@@ -189,6 +192,7 @@ export function ProjectDetailPage({
     async function run() {
       setIsIssuesLoading(true);
       setIssuesError(null);
+      setIssuesErrorTitle("Could not load issues");
 
       try {
         const response = await listRepositoryIssues(owner, repo, {
@@ -203,6 +207,7 @@ export function ProjectDetailPage({
           return;
         }
         setIssues([]);
+        setIssuesErrorTitle(apiErrorTitle(loadError, "Could not load issues"));
         setIssuesError(messageForRepositoryError(loadError));
       } finally {
         if (isCurrent) {
@@ -246,7 +251,7 @@ export function ProjectDetailPage({
     return (
       <AppShell>
         <EmptyState
-          title="Could not load repository"
+          title={repositoryErrorTitle}
           description={repositoryError}
           action={
             <Button
@@ -473,7 +478,7 @@ export function ProjectDetailPage({
           </div>
         ) : issuesError ? (
           <EmptyState
-            title="Could not load issues"
+            title={issuesErrorTitle}
             description={issuesError}
             action={
               <Button

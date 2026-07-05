@@ -14,7 +14,7 @@ import {
   adaptApiUserRepositoryStateToMatchedProject,
   projectStatusToApiRepositoryState,
 } from "@/services/dotti/adapters";
-import { DottiApiError } from "@/services/dotti/client";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import {
   deleteRepositoryState,
   listUserRepositories,
@@ -56,21 +56,11 @@ type SavedProjectsContextValue = {
 const SavedProjectsContext = createContext<SavedProjectsContextValue | null>(null);
 
 function messageForRepositoryStateError(error: unknown) {
-  if (error instanceof DottiApiError) {
-    if (error.status === 401) {
-      return "Your session expired. Sign in again to manage saved projects.";
-    }
-
-    if (error.status === 422) {
-      return "The repository status was rejected by the API.";
-    }
-
-    return error.message;
-  }
-
-  return error instanceof Error
-    ? error.message
-    : "Could not update repository state.";
+  return apiErrorMessage(error, {
+    fallback: "Could not update repository state.",
+    unauthorized: "Your session expired. Sign in again to manage saved projects.",
+    validation: "The repository status was rejected by the API.",
+  });
 }
 
 function repositoryNameFor(project: MatchedProject | undefined) {

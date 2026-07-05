@@ -6,6 +6,7 @@ import { Button as AnimateButton } from "@/components/animate-ui/primitives/butt
 import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Button } from "@/components/ui/Button";
 import { adaptApiTechnologyToUserTechnology } from "@/services/dotti/adapters";
+import { apiErrorMessage } from "@/services/dotti/apiErrorState";
 import { listTechnologies } from "@/services/dotti/profile";
 import type { SkillLevel, TechCategory, UserTechnology } from "@/types";
 import { cn } from "@/utils/cn";
@@ -44,9 +45,10 @@ export function TechnologySelector({
     } catch (loadError) {
       setCatalog([]);
       setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Could not load technology catalog.",
+        apiErrorMessage(loadError, {
+          fallback: "Could not load technology catalog.",
+          validation: "The technology catalog request was rejected by the API.",
+        }),
       );
     } finally {
       setIsLoading(false);
@@ -77,9 +79,10 @@ export function TechnologySelector({
 
         setCatalog([]);
         setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Could not load technology catalog.",
+          apiErrorMessage(loadError, {
+            fallback: "Could not load technology catalog.",
+            validation: "The technology catalog request was rejected by the API.",
+          }),
         );
       })
       .finally(() => {
