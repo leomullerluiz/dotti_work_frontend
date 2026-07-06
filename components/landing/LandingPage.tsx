@@ -4,11 +4,11 @@ import {
   ArrowRight,
   CheckCircle2,
   GitBranch,
-  Sparkles,
 } from "lucide-react";
 import { buttonClasses } from "@/components/ui/buttonStyles";
 import { cn } from "@/utils/cn";
 import { HomeDataConsentModal } from "./HomeDataConsentModal";
+import { LandingAuthActions } from "./LandingAuthActions";
 import { SmoothAnchorLink } from "./SmoothAnchorLink";
 import { Icons } from "../ui/Icons";
 
@@ -80,15 +80,7 @@ export function LandingPage() {
           </SmoothAnchorLink>
         </nav>
         <div className="flex items-center gap-2">
-          <a href="/login">
-            Login
-          </a>
-          <a
-            href="/onboarding"
-            className={buttonClasses({ size: "sm", className: "hidden sm:inline-flex" })}
-          >
-            Start
-          </a>
+          <LandingAuthActions />
         </div>
       </header>
 
@@ -112,23 +104,7 @@ export function LandingPage() {
               How it works
             </SmoothAnchorLink>
           </div>
-          <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
-            {[
-              ["API", "repository matches"],
-              ["8", "contribution types"],
-              ["LGPD", "privacy controls"],
-            ].map(([value, label]) => (
-              <div
-                key={label}
-                className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
-              >
-                <div className="text-2xl font-semibold text-coral-500">{value}</div>
-                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
+
         </div>
 
         <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-black/30">
@@ -140,7 +116,7 @@ export function LandingPage() {
                 </p>
                 <h2 className="mt-1 font-semibold">Recommended matches</h2>
               </div>
-              <Sparkles size={20} className="text-coral-500" />
+              <Icons.GitHubIcon color="var(--theme-primary-500)" />
             </div>
             <div className="mt-4 space-y-3">
               {matchSignals.map((signal) => (
@@ -155,7 +131,7 @@ export function LandingPage() {
                         {signal.description}
                       </p>
                     </div>
-                    <StaticBadge tone="success">API</StaticBadge>
+
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {signal.tags.map((tag) => (

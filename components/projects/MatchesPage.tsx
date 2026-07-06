@@ -26,6 +26,15 @@ export function MatchesPage() {
     ignoredProjectIds,
   } = useMatches();
   const { profile } = useProfile();
+  const canRefresh = !isLoading && !isRefreshing;
+
+  const refreshAndScrollToTop = () => {
+    refreshMatches();
+
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <AppShell>
@@ -38,7 +47,7 @@ export function MatchesPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={refreshMatches}
+              onClick={refreshAndScrollToTop}
               disabled={isLoading || isRefreshing}
             >
               <RefreshCcw size={16} className={isRefreshing ? "animate-spin" : ""} />
@@ -68,19 +77,58 @@ export function MatchesPage() {
           </div>
         </div>
 
-        {error ? (
-          <EmptyState
-            title="Could not load matches"
-            description={error}
-            action={
-              <Button type="button" onClick={retryMatches}>
-                Retry
-              </Button>
-            }
-          />
-        ) : (
-          <ProjectGrid projects={projects} isLoading={isLoading || isRefreshing} />
-        )}
+        <div className="min-w-0">
+          {error ? (
+            <EmptyState
+              title="Could not load matches"
+              description={error}
+              action={
+                <Button type="button" onClick={retryMatches}>
+                  Retry
+                </Button>
+              }
+            />
+          ) : (
+            <>
+              <ProjectGrid
+                projects={projects}
+                isLoading={isLoading || isRefreshing}
+                emptyAction={
+                  <Button
+                    type="button"
+                    onClick={refreshAndScrollToTop}
+                    disabled={!canRefresh}
+                  >
+                    <RefreshCcw
+                      size={16}
+                      className={isRefreshing ? "animate-spin" : ""}
+                    />
+                    Refresh matches
+                  </Button>
+                }
+              />
+
+              {projects.length > 0 && canRefresh ? (
+                <AnimatedDiv className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                  <h2 className="font-semibold text-zinc-950 dark:text-white">
+                    Want newer recommendations?
+                  </h2>
+                  <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                    Refresh matches to ask the API for updated repository suggestions.
+                  </p>
+                  <Button
+                    type="button"
+                    className="mt-4"
+                    onClick={refreshAndScrollToTop}
+                  >
+                    <RefreshCcw size={16} />
+                    Refresh matches
+                  </Button>
+                </AnimatedDiv>
+              ) : null}
+            </>
+          )}
+        </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
           <StatCard

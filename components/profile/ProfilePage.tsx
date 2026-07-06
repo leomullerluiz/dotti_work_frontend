@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Download, RotateCcw } from "lucide-react";
+import { Download, ExternalLink, RotateCcw } from "lucide-react";
 import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
@@ -60,6 +60,9 @@ export function ProfilePage() {
   const profileName =
     profile?.name || session?.user.display_name || session?.user.login || "Technical profile";
   const githubLogin = session?.user.login ? `@${session.user.login}` : null;
+  const githubProfileUrl =
+    session?.user.github_profile_url ??
+    (session?.user.login ? `https://github.com/${session.user.login}` : null);
 
   if (isLoading) {
     return (
@@ -135,20 +138,33 @@ export function ProfilePage() {
       />
 
       <AnimatedSection className="mb-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <GitHubAvatar
-            avatarUrl={session?.user.avatar_url}
-            label={profileName}
-            size="lg"
-          />
-          <div className="min-w-0">
-            <h2 className="truncate text-xl font-semibold text-zinc-950 dark:text-white">
-              {profileName}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              {githubLogin ?? profile.role}
-            </p>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <GitHubAvatar
+              avatarUrl={session?.user.avatar_url}
+              label={profileName}
+              size="lg"
+            />
+            <div className="min-w-0">
+              <h2 className="truncate text-xl font-semibold text-zinc-950 dark:text-white">
+                {profileName}
+              </h2>
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                {githubLogin ?? profile.role}
+              </p>
+            </div>
           </div>
+          {githubProfileUrl ? (
+            <a
+              href={githubProfileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonClasses({ variant: "outline" })}
+            >
+              <ExternalLink size={16} />
+              Github Profile
+            </a>
+          ) : null}
         </div>
       </AnimatedSection>
 
