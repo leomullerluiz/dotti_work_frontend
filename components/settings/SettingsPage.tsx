@@ -1,14 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Download, LogOut, Trash2, Upload } from "lucide-react";
+import { Download, LogOut, Trash2, Upload, UserPlus } from "lucide-react";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PrivacyConsentSettings } from "@/components/privacy/PrivacyConsentSettings";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClasses } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ExportImportDataDialog } from "@/components/ui/ExportImportDataDialog";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -274,6 +275,12 @@ export function SettingsPage() {
         eyebrow="Settings"
         title="Application settings"
         description="Manage appearance, local data, GitHub session, and account preferences."
+        actions={
+          <Link href="/settings/invites" className={buttonClasses({ variant: "outline" })}>
+            <UserPlus size={16} />
+            Invites
+          </Link>
+        }
       />
 
       <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">

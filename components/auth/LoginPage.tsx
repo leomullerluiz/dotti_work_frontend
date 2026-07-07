@@ -7,15 +7,22 @@ import { ArrowRight, FileText, Loader2, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
+import { PENDING_INVITE_CODE_STORAGE_KEY } from "@/services/dotti/invites";
 import { useAuth } from "@/hooks/useAuth";
 import { Icons } from "../ui/Icons";
 
 export function LoginPage({ returnTo }: { returnTo?: string }) {
   const searchParams = useSearchParams();
   const requestedReturnTo = returnTo ?? searchParams.get("return_to") ?? undefined;
+  const [pendingInviteCode] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : window.sessionStorage.getItem(PENDING_INVITE_CODE_STORAGE_KEY),
+  );
+  const fallbackReturnTo = pendingInviteCode ? "/onboarding" : "/matches";
   const safeReturnTo = useMemo(
-    () => normalizeReturnTo(requestedReturnTo, "/matches"),
-    [requestedReturnTo],
+    () => normalizeReturnTo(requestedReturnTo, fallbackReturnTo),
+    [fallbackReturnTo, requestedReturnTo],
   );
   const { session, status } = useAuth();
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -32,7 +39,11 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
 
   const startGitHubLogin = () => {
     setIsRedirecting(true);
-    window.location.assign(buildGitHubOAuthStartUrl(safeReturnTo));
+    window.location.assign(
+      buildGitHubOAuthStartUrl(safeReturnTo, {
+        inviteCode: pendingInviteCode,
+      }),
+    );
   };
 
   const isChecking = status === "checking" || status === "authenticated";

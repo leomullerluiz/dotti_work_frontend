@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { InvitePathRedirect } from "@/components/invites/InvitePathRedirect";
 import { ProjectPathRedirect } from "@/components/projects/ProjectPathRedirect";
 import { buttonClasses } from "@/components/ui/Button";
 
 export default function NotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-app px-4 text-center">
+      <InvitePathRedirect />
       <ProjectPathRedirect />
       <div className="max-w-lg">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-coral-500">

@@ -152,8 +152,16 @@ export function normalizeReturnTo(value: string | null | undefined, fallback = "
   return value;
 }
 
-export function buildGitHubOAuthStartUrl(returnTo: string) {
+export function buildGitHubOAuthStartUrl(
+  returnTo: string,
+  options: { inviteCode?: string | null } = {},
+) {
   const url = new URL(`${API_BASE_URL}/auth/github/start`);
   url.searchParams.set("return_to", normalizeReturnTo(returnTo));
+
+  if (options.inviteCode?.trim()) {
+    url.searchParams.set("invite_code", options.inviteCode.trim());
+  }
+
   return url.toString();
 }

@@ -7,6 +7,7 @@ import { CheckCircle2, GitBranch, Loader2, XCircle } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
+import { PENDING_INVITE_CODE_STORAGE_KEY } from "@/services/dotti/invites";
 import { useAuth } from "@/hooks/useAuth";
 
 type CallbackState = "checking" | "success" | "error";
@@ -32,6 +33,11 @@ export function AuthCallbackPage({
   );
   const [state, setState] = useState<CallbackState>(
     requestedStatus === "success" ? "checking" : "error",
+  );
+  const [pendingInviteCode] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : window.sessionStorage.getItem(PENDING_INVITE_CODE_STORAGE_KEY),
   );
   const [message, setMessage] = useState(
     requestedStatus === "error"
@@ -60,6 +66,7 @@ export function AuthCallbackPage({
 
         setState("success");
         setMessage("Session confirmed. Redirecting...");
+        window.sessionStorage.removeItem(PENDING_INVITE_CODE_STORAGE_KEY);
 
         const shouldFinishOnboarding = safeReturnTo.startsWith(
           "/onboarding?complete=1",
@@ -87,7 +94,9 @@ export function AuthCallbackPage({
     };
   }, [refreshSession, requestedStatus, router, safeReturnTo]);
 
-  const retryUrl = buildGitHubOAuthStartUrl(safeReturnTo);
+  const retryUrl = pendingInviteCode
+    ? `/invite/${encodeURIComponent(pendingInviteCode)}`
+    : buildGitHubOAuthStartUrl(safeReturnTo);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-app px-4 py-8 text-zinc-950 dark:text-white">
@@ -115,7 +124,7 @@ export function AuthCallbackPage({
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a href={retryUrl} className={buttonClasses()}>
               <GitBranch size={17} />
-              Try GitHub again
+              {pendingInviteCode ? "Return to invite" : "Try GitHub again"}
             </a>
             <Link
               href="/login"

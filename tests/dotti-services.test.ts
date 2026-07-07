@@ -111,6 +111,12 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /me/consents:", "operationId: listMyConsents"],
       ["  /me/consents:", "operationId: grantMyConsent"],
       ["  /me/consents/{type}:", "operationId: revokeMyConsent"],
+      ["  /auth/github/start:", "operationId: startGitHubOAuth"],
+      ["  /me/invite-links:", "operationId: listMyInviteLinks"],
+      ["  /me/invite-links:", "operationId: createMyInviteLink"],
+      ["  /me/invite-links/{id}/revoke:", "operationId: revokeMyInviteLink"],
+      ["  /me/referrals:", "operationId: listMyReferrals"],
+      ["  /invites/{code}:", "operationId: getPublicInvite"],
     ].forEach(([path, operationId]) => {
       assert.ok(openapi.includes(path), `Expected ${path} in openapi.yaml`);
       assert.ok(
@@ -130,6 +136,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   const githubIntegration = await import("../services/dotti/githubIntegration");
   const consents = await import("../services/dotti/consents");
   const profile = await import("../services/dotti/profile");
+  const invites = await import("../services/dotti/invites");
 
   await t.test("matches service serializes filters and unwraps envelopes", async () => {
     resetFetchMock();
@@ -723,6 +730,109 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/me/consents/analytics");
     assert.equal(lastRequest().init?.method, "DELETE");
     assert.equal(revokedConsent.status, "revoked");
+  });
+
+  await t.test("invite service uses invite link and referral endpoints", async () => {
+    resetFetchMock();
+    enqueueData({
+      invite_links: [
+        {
+          id: 10,
+          code: "AbC123xYz_456789",
+          url: "https://dotti.work/invite/AbC123xYz_456789",
+          status: "active",
+          uses_count: 2,
+          expires_at: null,
+          created_at: "2026-07-07 18:00:00",
+        },
+      ],
+      summary: {
+        effective_referrals: 2,
+      },
+    });
+    const inviteLinks = await invites.listMyInviteLinks();
+
+    assert.equal(lastUrl().pathname, "/api/me/invite-links");
+    assert.equal(inviteLinks.summary.effective_referrals, 2);
+
+    resetFetchMock();
+    enqueueData({
+      invite_link: {
+        id: 10,
+        code: "AbC123xYz_456789",
+        url: "https://dotti.work/invite/AbC123xYz_456789",
+        status: "active",
+        uses_count: 0,
+        expires_at: null,
+        created_at: "2026-07-07 18:00:00",
+      },
+    });
+    const created = await invites.createMyInviteLink();
+
+    assert.equal(lastUrl().pathname, "/api/me/invite-links");
+    assert.equal(lastRequest().init?.method, "POST");
+    assert.equal(created.invite_link.code, "AbC123xYz_456789");
+
+    resetFetchMock();
+    enqueueData({
+      summary: {
+        effective_referrals: 2,
+      },
+      referrals: [
+        {
+          registered_at: "2026-07-07 18:30:00",
+          referred_user: {
+            login: "octocat",
+            display_name: "Octocat",
+            avatar_url: null,
+          },
+        },
+      ],
+    });
+    const referrals = await invites.listMyReferrals({ limit: 10 });
+
+    assert.equal(lastUrl().pathname, "/api/me/referrals");
+    assert.equal(lastUrl().searchParams.get("limit"), "10");
+    assert.equal(referrals.referrals[0]?.referred_user.login, "octocat");
+
+    resetFetchMock();
+    enqueueData({
+      invite: {
+        code: "AbC123xYz_456789",
+        valid: true,
+        inviter: {
+          display_name: "Leo",
+          avatar_url: null,
+        },
+      },
+    });
+    const publicInvite = await invites.getPublicInvite("AbC123xYz_456789");
+
+    assert.equal(lastUrl().pathname, "/api/invites/AbC123xYz_456789");
+    assert.equal(publicInvite.invite.valid, true);
+
+    resetFetchMock();
+    enqueueData({ revoked: true });
+    const revoked = await invites.revokeMyInviteLink(10);
+
+    assert.equal(lastUrl().pathname, "/api/me/invite-links/10/revoke");
+    assert.equal(lastRequest().init?.method, "POST");
+    assert.equal(revoked.revoked, true);
+  });
+
+  await t.test("github oauth helper includes invite_code when provided", () => {
+    const oauthUrl = new URL(
+      client.buildGitHubOAuthStartUrl("/onboarding", {
+        inviteCode: " AbC123xYz_456789 ",
+      }),
+    );
+
+    assert.equal(oauthUrl.pathname, "/api/auth/github/start");
+    assert.equal(oauthUrl.searchParams.get("return_to"), "/onboarding");
+    assert.equal(oauthUrl.searchParams.get("invite_code"), "AbC123xYz_456789");
+
+    const normalOauthUrl = new URL(client.buildGitHubOAuthStartUrl("/matches"));
+    assert.equal(normalOauthUrl.searchParams.has("invite_code"), false);
   });
 
   await t.test("services propagate DottiApiError from the central client", async () => {
