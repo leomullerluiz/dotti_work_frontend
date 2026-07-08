@@ -103,8 +103,8 @@ export async function dottiRequest<T>(
     ...init,
     body,
     headers,
-    cache: "no-store",
-    credentials: "include",
+    cache: init.cache ?? "no-store",
+    credentials: init.credentials ?? "include",
   });
 
   const payload = await readJson<ApiEnvelope<T>>(response);

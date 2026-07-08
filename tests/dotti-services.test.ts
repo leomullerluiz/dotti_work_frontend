@@ -120,6 +120,12 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /badges:", "operationId: listBadgeCatalog"],
       ["  /me/badges:", "operationId: listMyBadges"],
       ["  /me/badges/evaluate:", "operationId: evaluateMyBadges"],
+      ["  /public/profiles/{login}:", "operationId: getPublicUserProfile"],
+      ["  /me/public-profile:", "operationId: previewMyPublicProfile"],
+      [
+        "  /me/public-profile/settings:",
+        "operationId: updateMyPublicProfileSettings",
+      ],
     ].forEach(([path, operationId]) => {
       assert.ok(openapi.includes(path), `Expected ${path} in openapi.yaml`);
       assert.ok(
@@ -141,6 +147,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   const profile = await import("../services/dotti/profile");
   const invites = await import("../services/dotti/invites");
   const badges = await import("../services/dotti/badges");
+  const publicProfile = await import("../services/dotti/publicProfile");
 
   await t.test("matches service serializes filters and unwraps envelopes", async () => {
     resetFetchMock();
@@ -877,6 +884,83 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/me/badges/evaluate");
     assert.equal(lastRequest().init?.method, "POST");
     assert.deepEqual(evaluated.awarded, []);
+  });
+
+  await t.test("public profile service uses public and authenticated endpoints", async () => {
+    const publicProfileData = {
+      profile: {
+        login: "ana-dev",
+        display_name: "Ana Dev",
+        avatar_url: null,
+        bio: "Frontend developer",
+        location: null,
+        company: null,
+        website_url: null,
+        github_profile_url: "https://github.com/ana-dev",
+        role: "Frontend Developer",
+        seniority: "mid",
+        goals: [],
+        joined_at: null,
+      },
+      github: {
+        login: "ana-dev",
+        url: "https://github.com/ana-dev",
+        connected: true,
+      },
+      technologies: [],
+      metrics: {
+        technologies_count: 0,
+        badges_count: 0,
+        repositories_saved_count: 0,
+        repositories_contributed_count: 0,
+        pull_requests_sent_count: 0,
+        opened_github_count: 0,
+        activity_days_count: 0,
+        member_since: null,
+        last_activity_at: null,
+      },
+      badges: [],
+      featured_repositories: [],
+      share: {
+        canonical_url: "https://dotti.work/u/ana-dev",
+        api_url: "https://api.dottiwork.com/api/v1/public/profiles/ana-dev",
+      },
+    };
+
+    resetFetchMock();
+    enqueueData(publicProfileData);
+    const fetchedPublicProfile = await publicProfile.getPublicUserProfile("ana dev");
+
+    assert.equal(lastUrl().pathname, "/api/public/profiles/ana%20dev");
+    assert.equal(lastRequest().init?.credentials, "omit");
+    assert.equal(fetchedPublicProfile.profile.login, "ana-dev");
+
+    resetFetchMock();
+    enqueueData({
+      is_public: true,
+      share_url: "https://dotti.work/u/ana-dev",
+      profile: publicProfileData,
+      warnings: [],
+    });
+    const preview = await publicProfile.getMyPublicProfilePreview();
+
+    assert.equal(lastUrl().pathname, "/api/me/public-profile");
+    assert.equal(lastRequest().init?.credentials, "include");
+    assert.equal(preview.is_public, true);
+
+    resetFetchMock();
+    enqueueData({
+      is_public: false,
+      share_url: null,
+      public_profile_slug: "ana-dev",
+    });
+    const settings = await publicProfile.updatePublicProfileSettings(false);
+
+    assert.equal(lastUrl().pathname, "/api/me/public-profile/settings");
+    assert.equal(lastRequest().init?.method, "PUT");
+    assert.equal(lastRequest().init?.credentials, "include");
+    assertJsonBody({ is_public: false });
+    assert.equal(settings.is_public, false);
   });
 
   await t.test("github oauth helper includes invite_code when provided", () => {

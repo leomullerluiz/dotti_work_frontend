@@ -426,6 +426,96 @@ export type ApiUserBadge = {
   badge: ApiBadge;
 };
 
+export type ApiPublicProfileUser = {
+  login?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  company?: string | null;
+  website_url?: string | null;
+  github_profile_url?: string | null;
+  role?: string | null;
+  seniority?: ApiSeniority | null;
+  goals?: ApiProfileGoal[];
+  joined_at?: string | null;
+};
+
+export type ApiPublicGitHubProfile = {
+  login: string | null;
+  url: string | null;
+  connected: boolean;
+};
+
+export type ApiPublicTechnology = {
+  slug: string;
+  name: string;
+  category: ApiTechnologyCategory;
+  proficiency_level: ApiProficiencyLevel;
+  interest_level: ApiInterestLevel;
+};
+
+export type ApiPublicProfileMetrics = {
+  technologies_count: number;
+  badges_count: number;
+  repositories_saved_count: number;
+  repositories_contributed_count: number;
+  pull_requests_sent_count: number;
+  opened_github_count: number;
+  activity_days_count: number;
+  member_since: string | null;
+  last_activity_at: string | null;
+};
+
+export type ApiPublicUserBadge = {
+  slug: string;
+  awarded_at: string | null;
+  badge: ApiBadge;
+};
+
+export type ApiPublicFeaturedRepository = {
+  github_repository_id: number | null;
+  owner_login: string | null;
+  repository_name: string | null;
+  state: ApiRepositoryStateValue;
+  public_url: string | null;
+  updated_at: string | null;
+  repository?: ApiRepositorySummary | null;
+};
+
+export type ApiPublicProfileShare = {
+  canonical_url: string | null;
+  api_url: string | null;
+};
+
+export type ApiPublicUserProfileData = {
+  profile: ApiPublicProfileUser;
+  github: ApiPublicGitHubProfile;
+  technologies: ApiPublicTechnology[];
+  metrics: ApiPublicProfileMetrics;
+  badges: ApiPublicUserBadge[];
+  featured_repositories: ApiPublicFeaturedRepository[];
+  share: ApiPublicProfileShare;
+};
+
+export type ApiPublicProfileWarning = {
+  code: string;
+  message: string;
+};
+
+export type ApiPublicProfilePreview = {
+  is_public: boolean;
+  share_url: string | null;
+  profile: ApiPublicUserProfileData;
+  warnings?: ApiPublicProfileWarning[];
+};
+
+export type ApiPublicProfileSettings = {
+  is_public: boolean;
+  share_url: string | null;
+  public_profile_slug: string | null;
+};
+
 export type ApiBadgeProgress = {
   slug: string;
   current_value: number;

@@ -8,6 +8,7 @@ import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCar
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PrivacyConsentSettings } from "@/components/privacy/PrivacyConsentSettings";
+import { PublicProfileSettingsPanel } from "@/components/public-profile/PublicProfileSettingsPanel";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -298,6 +299,8 @@ export function SettingsPage() {
 
         <GitHubIntegrationCard returnTo="/settings" showSignOut />
       </div>
+
+      <PublicProfileSettingsPanel />
 
       <AnimatedSection className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
