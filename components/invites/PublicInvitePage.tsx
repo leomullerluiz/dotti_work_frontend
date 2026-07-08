@@ -17,6 +17,7 @@ import {
   PENDING_INVITE_CODE_STORAGE_KEY,
   type PublicInvite,
 } from "@/services/dotti/invites";
+import { parseInvitePath } from "@/utils/inviteRoutes";
 
 type InviteState = "loading" | "valid" | "invalid" | "rate-limited" | "error";
 
@@ -56,7 +57,11 @@ export function PublicInvitePage({ code }: { code: string }) {
       return code;
     }
 
-    return new URLSearchParams(window.location.search).get("code") ?? code;
+    return (
+      new URLSearchParams(window.location.search).get("code") ??
+      parseInvitePath(window.location.pathname)?.code ??
+      code
+    );
   });
   const [invite, setInvite] = useState<PublicInvite | null>(null);
   const [state, setState] = useState<InviteState>("loading");
