@@ -8,6 +8,7 @@ import { Logo } from "@/components/layout/Logo";
 import { buttonClasses } from "@/components/ui/Button";
 import { buildGitHubOAuthStartUrl, normalizeReturnTo } from "@/services/dotti/client";
 import { PENDING_INVITE_CODE_STORAGE_KEY } from "@/services/dotti/invites";
+import { inviteHref } from "@/utils/inviteRoutes";
 import { useAuth } from "@/hooks/useAuth";
 
 type CallbackState = "checking" | "success" | "error";
@@ -95,7 +96,7 @@ export function AuthCallbackPage({
   }, [refreshSession, requestedStatus, router, safeReturnTo]);
 
   const retryUrl = pendingInviteCode
-    ? `/invite/${encodeURIComponent(pendingInviteCode)}`
+    ? inviteHref(pendingInviteCode)
     : buildGitHubOAuthStartUrl(safeReturnTo);
 
   return (

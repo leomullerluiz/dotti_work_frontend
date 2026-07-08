@@ -1,19 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { inviteFallbackHref, parseInvitePath } from "../utils/inviteRoutes";
+import { inviteCodeFromSearch, inviteHref, inviteUrl } from "../utils/inviteRoutes";
 
-test("invite fallback route keeps the invite code in query string", () => {
-  assert.equal(inviteFallbackHref("AbC123xYz"), "/invite/_?code=AbC123xYz");
+test("invite route uses a static-export friendly query string", () => {
+  assert.equal(
+    inviteHref("q6m-G52ZJiF9R6a0kBbe-dXL"),
+    "/invite/?code=q6m-G52ZJiF9R6a0kBbe-dXL",
+  );
 });
 
-test("invite paths can be recovered from a 404 fallback", () => {
-  assert.deepEqual(parseInvitePath("/invite/AbC123xYz"), {
-    code: "AbC123xYz",
-  });
+test("invite URL keeps the current origin", () => {
+  assert.equal(
+    inviteUrl("q6m-G52ZJiF9R6a0kBbe-dXL", "https://dotti.work"),
+    "https://dotti.work/invite/?code=q6m-G52ZJiF9R6a0kBbe-dXL",
+  );
+});
 
-  assert.deepEqual(parseInvitePath("/invite/code%20with%20space"), {
-    code: "code with space",
-  });
+test("invite code can be read from search params", () => {
+  assert.equal(
+    inviteCodeFromSearch("?code=q6m-G52ZJiF9R6a0kBbe-dXL"),
+    "q6m-G52ZJiF9R6a0kBbe-dXL",
+  );
 
-  assert.equal(parseInvitePath("/matches"), null);
+  assert.equal(inviteCodeFromSearch("?utm=source"), "");
 });

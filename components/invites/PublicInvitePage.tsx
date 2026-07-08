@@ -17,7 +17,7 @@ import {
   PENDING_INVITE_CODE_STORAGE_KEY,
   type PublicInvite,
 } from "@/services/dotti/invites";
-import { parseInvitePath } from "@/utils/inviteRoutes";
+import { inviteCodeFromSearch } from "@/utils/inviteRoutes";
 
 type InviteState = "loading" | "valid" | "invalid" | "rate-limited" | "error";
 
@@ -47,22 +47,8 @@ function publicInviteErrorMessage(error: unknown) {
   });
 }
 
-export function PublicInvitePage({ code }: { code: string }) {
-  const [resolvedCode] = useState(() => {
-    if (code !== "_") {
-      return code;
-    }
-
-    if (typeof window === "undefined") {
-      return code;
-    }
-
-    return (
-      new URLSearchParams(window.location.search).get("code") ??
-      parseInvitePath(window.location.pathname)?.code ??
-      code
-    );
-  });
+export function PublicInvitePage({ code = "" }: { code?: string }) {
+  const [resolvedCode, setResolvedCode] = useState(code.trim());
   const [invite, setInvite] = useState<PublicInvite | null>(null);
   const [state, setState] = useState<InviteState>("loading");
   const [message, setMessage] = useState("Checking this invite...");
@@ -77,16 +63,32 @@ export function PublicInvitePage({ code }: { code: string }) {
   useEffect(() => {
     let isMounted = true;
 
-    window.sessionStorage.setItem(PENDING_INVITE_CODE_STORAGE_KEY, resolvedCode);
     Promise.resolve()
       .then(() => {
         if (!isMounted) {
           return null;
         }
 
+        const nextCode =
+          code.trim() ||
+          (typeof window === "undefined"
+            ? ""
+            : inviteCodeFromSearch(window.location.search));
+
+        setResolvedCode(nextCode);
+
+        if (!nextCode) {
+          window.sessionStorage.removeItem(PENDING_INVITE_CODE_STORAGE_KEY);
+          setInvite(null);
+          setState("invalid");
+          setMessage("This invite link is missing a code.");
+          return null;
+        }
+
+        window.sessionStorage.setItem(PENDING_INVITE_CODE_STORAGE_KEY, nextCode);
         setState("loading");
         setMessage("Checking this invite...");
-        return getPublicInvite(resolvedCode);
+        return getPublicInvite(nextCode);
       })
       .then((response) => {
         if (!isMounted || !response) {
@@ -101,7 +103,11 @@ export function PublicInvitePage({ code }: { code: string }) {
           return;
         }
 
-        window.sessionStorage.setItem(PENDING_INVITE_CODE_STORAGE_KEY, resolvedCode);
+        window.sessionStorage.setItem(
+          PENDING_INVITE_CODE_STORAGE_KEY,
+          response.invite.code,
+        );
+        setResolvedCode(response.invite.code);
         setInvite(response.invite);
         setState("valid");
         setMessage(
@@ -126,7 +132,7 @@ export function PublicInvitePage({ code }: { code: string }) {
     return () => {
       isMounted = false;
     };
-  }, [resolvedCode]);
+  }, [code]);
 
   const startGitHub = () => {
     window.sessionStorage.setItem(PENDING_INVITE_CODE_STORAGE_KEY, resolvedCode);
@@ -135,7 +141,7 @@ export function PublicInvitePage({ code }: { code: string }) {
   };
 
   const isLoading = state === "loading";
-  const canStart = state === "valid" && !isRedirecting;
+  const canStart = state === "valid" && Boolean(resolvedCode) && !isRedirecting;
 
   return (
     <main className="min-h-screen bg-app px-4 py-6 text-zinc-950 dark:text-white sm:px-6">

@@ -1,30 +1,21 @@
-export type InviteRouteParams = {
-  code: string;
-};
+const INVITE_CODE_PARAM = "code";
 
-function cleanCode(value: string | null | undefined) {
+function cleanInviteCode(value: string | null | undefined) {
   return value?.trim() ?? "";
 }
 
-export function inviteFallbackHref(code: string) {
+export function inviteHref(code: string) {
   const params = new URLSearchParams({
-    code: cleanCode(code),
+    [INVITE_CODE_PARAM]: cleanInviteCode(code),
   });
 
-  return `/invite/_?${params.toString()}`;
+  return `/invite/?${params.toString()}`;
 }
 
-export function parseInvitePath(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
+export function inviteUrl(code: string, origin: string) {
+  return new URL(inviteHref(code), origin).toString();
+}
 
-  if (segments.length !== 2 || segments[0] !== "invite") {
-    return null;
-  }
-
-  try {
-    const code = decodeURIComponent(segments[1]);
-    return code ? ({ code } satisfies InviteRouteParams) : null;
-  } catch {
-    return segments[1] ? ({ code: segments[1] } satisfies InviteRouteParams) : null;
-  }
+export function inviteCodeFromSearch(search: string) {
+  return cleanInviteCode(new URLSearchParams(search).get(INVITE_CODE_PARAM));
 }

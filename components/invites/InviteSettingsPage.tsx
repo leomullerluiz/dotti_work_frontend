@@ -27,6 +27,7 @@ import {
   type InviteLink,
   type InviteSummary,
 } from "@/services/dotti/invites";
+import { inviteUrl } from "@/utils/inviteRoutes";
 
 const REFRESH_AFTER_MS = 15000;
 
@@ -86,6 +87,15 @@ export function InviteSettingsPage() {
     () => links.find(isActiveInvite) ?? null,
     [links],
   );
+  const activeInviteUrl = useMemo(() => {
+    if (!activeLink) {
+      return "";
+    }
+
+    return typeof window === "undefined"
+      ? activeLink.url
+      : inviteUrl(activeLink.code, window.location.origin);
+  }, [activeLink]);
   const latestLink = links[0] ?? null;
   const effectiveReferrals = summary.effective_referrals ?? 0;
 
@@ -192,7 +202,7 @@ export function InviteSettingsPage() {
     setPendingAction("copy");
 
     try {
-      await copyToClipboard(activeLink.url);
+      await copyToClipboard(activeInviteUrl);
       showToast("Invite link copied.");
     } catch {
       showToast("Could not copy the invite link.", "error");
@@ -209,13 +219,13 @@ export function InviteSettingsPage() {
     setPendingAction("share");
 
     try {
-      const shareText = `I am using dotti.work to find open source projects to contribute to. Join here: ${activeLink.url}`;
+      const shareText = `I am using dotti.work to find open source projects to contribute to. Join here: ${activeInviteUrl}`;
 
       if (navigator.share) {
         await navigator.share({
           title: "Join me on dotti.work",
           text: shareText,
-          url: activeLink.url,
+          url: activeInviteUrl,
         });
         showToast("Invite link shared.");
       } else {
@@ -330,7 +340,7 @@ export function InviteSettingsPage() {
             <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_auto_auto]">
               <input
                 readOnly
-                value={activeLink.url}
+                value={activeInviteUrl}
                 className="min-h-11 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-900 outline-none dark:border-white/10 dark:bg-black/20 dark:text-white"
                 aria-label="Invite link"
                 onFocus={(event) => event.currentTarget.select()}
