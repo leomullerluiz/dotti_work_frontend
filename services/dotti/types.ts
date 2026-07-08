@@ -402,3 +402,44 @@ export type ApiConsent = {
   created_at: string;
   revoked_at: string | null;
 };
+
+export type ApiBadge = {
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  level: string;
+  image_url: string;
+  image_alt: string;
+  icon?: string | null;
+  is_secret: boolean;
+  display_order: number;
+  criteria_type?: string;
+  criteria_config?: Record<string, unknown>;
+};
+
+export type ApiUserBadge = {
+  slug: string;
+  awarded_at: string;
+  source_event_id?: number | null;
+  progress_snapshot?: Record<string, unknown>;
+  badge: ApiBadge;
+};
+
+export type ApiBadgeProgress = {
+  slug: string;
+  current_value: number;
+  target_value: number;
+  percent: number;
+  completed: boolean;
+  awarded_at?: string | null;
+  criteria_type?: string;
+  criteria_config?: Record<string, unknown>;
+  badge: ApiBadge;
+};
+
+export type ApiMyBadges = {
+  earned: ApiUserBadge[];
+  progress: ApiBadgeProgress[];
+  recently_awarded: ApiUserBadge[];
+};

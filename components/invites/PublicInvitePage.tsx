@@ -183,18 +183,6 @@ export function PublicInvitePage({ code = "" }: { code?: string }) {
                     ? "Checking invite"
                     : "Continue with GitHub"}
               </Button>
-              <Link
-                href="/login?return_to=%2Fonboarding"
-                className={buttonClasses({ variant: "outline", size: "lg" })}
-                onClick={() => {
-                  if (state !== "valid") {
-                    window.sessionStorage.removeItem(PENDING_INVITE_CODE_STORAGE_KEY);
-                  }
-                }}
-              >
-                Sign up without invite
-                <ArrowRight size={17} />
-              </Link>
             </div>
           </div>
 

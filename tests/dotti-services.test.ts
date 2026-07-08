@@ -117,6 +117,9 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /me/invite-links/{id}/revoke:", "operationId: revokeMyInviteLink"],
       ["  /me/referrals:", "operationId: listMyReferrals"],
       ["  /invites/{code}:", "operationId: getPublicInvite"],
+      ["  /badges:", "operationId: listBadgeCatalog"],
+      ["  /me/badges:", "operationId: listMyBadges"],
+      ["  /me/badges/evaluate:", "operationId: evaluateMyBadges"],
     ].forEach(([path, operationId]) => {
       assert.ok(openapi.includes(path), `Expected ${path} in openapi.yaml`);
       assert.ok(
@@ -137,6 +140,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   const consents = await import("../services/dotti/consents");
   const profile = await import("../services/dotti/profile");
   const invites = await import("../services/dotti/invites");
+  const badges = await import("../services/dotti/badges");
 
   await t.test("matches service serializes filters and unwraps envelopes", async () => {
     resetFetchMock();
@@ -818,6 +822,61 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/me/invite-links/10/revoke");
     assert.equal(lastRequest().init?.method, "POST");
     assert.equal(revoked.revoked, true);
+  });
+
+  await t.test("badge service uses catalog, user progress, and evaluate endpoints", async () => {
+    const badge = {
+      slug: "explorer",
+      name: "Explorer",
+      description: "Viewed open source projects.",
+      category: "discovery",
+      level: "bronze",
+      image_url: "https://dotti.work/assets/badges/explorer.png",
+      image_alt: "Explorer badge",
+      icon: "compass",
+      is_secret: false,
+      display_order: 20,
+    };
+
+    resetFetchMock();
+    enqueueData({ badges: [badge] });
+    const catalog = await badges.listBadgeCatalog();
+
+    assert.equal(lastUrl().pathname, "/api/badges");
+    assert.equal(catalog[0]?.slug, "explorer");
+
+    resetFetchMock();
+    enqueueData({
+      earned: [],
+      progress: [
+        {
+          slug: "explorer",
+          current_value: 3,
+          target_value: 5,
+          percent: 60,
+          completed: false,
+          badge,
+        },
+      ],
+      recently_awarded: [],
+    });
+    const myBadges = await badges.listMyBadges();
+
+    assert.equal(lastUrl().pathname, "/api/me/badges");
+    assert.equal(myBadges.progress[0]?.percent, 60);
+
+    resetFetchMock();
+    enqueueData({
+      awarded: [],
+      earned: [],
+      progress: [],
+      recently_awarded: [],
+    });
+    const evaluated = await badges.evaluateMyBadges();
+
+    assert.equal(lastUrl().pathname, "/api/me/badges/evaluate");
+    assert.equal(lastRequest().init?.method, "POST");
+    assert.deepEqual(evaluated.awarded, []);
   });
 
   await t.test("github oauth helper includes invite_code when provided", () => {

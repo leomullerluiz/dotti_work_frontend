@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { BarChart3, Filter, RefreshCcw, UserRound } from "lucide-react";
+import { BadgeProgressCard } from "@/components/badges/BadgeProgressCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedDetails, AnimatedDiv } from "@/components/ui/AnimatedSurface";
@@ -10,6 +11,7 @@ import { Button, buttonClasses } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StatCard } from "@/components/ui/StatCard";
 import { useMatches } from "@/hooks/useMatches";
+import { useBadges } from "@/hooks/useBadges";
 import { useProfile } from "@/hooks/useProfile";
 import { ProjectFilters } from "./ProjectFilters";
 import { ProjectGrid } from "./ProjectGrid";
@@ -25,6 +27,14 @@ export function MatchesPage() {
     retryMatches,
     ignoredProjectIds,
   } = useMatches();
+  const {
+    catalog: badgeCatalog,
+    earned: earnedBadges,
+    progress: badgeProgress,
+    isLoading: badgesLoading,
+    error: badgesError,
+    refreshBadges,
+  } = useBadges();
   const { profile } = useProfile();
   const canRefresh = !isLoading && !isRefreshing;
 
@@ -136,6 +146,16 @@ export function MatchesPage() {
             value={projects[0] ? `${projects[0].matchScore}%` : "0%"}
             helper={projects[0] ? `${projects[0].owner}/${projects[0].repo}` : "No result"}
             icon={<BarChart3 size={18} />}
+          />
+          <BadgeProgressCard
+            earned={earnedBadges}
+            progress={badgeProgress}
+            totalBadges={badgeCatalog.length}
+            isLoading={badgesLoading}
+            error={badgesError}
+            onRetry={() => {
+              void refreshBadges();
+            }}
           />
           <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <h2 className="font-semibold text-zinc-950 dark:text-white">

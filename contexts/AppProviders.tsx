@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { AuthenticatedConsentBanner } from "@/components/privacy/AuthenticatedConsentBanner";
 import { AuthProvider } from "./AuthContext";
+import { BadgesProvider } from "./BadgesContext";
 import { ConsentProvider } from "./ConsentContext";
 import { HistoryProvider } from "./HistoryContext";
 import { LocalStorageMaintenance } from "./LocalStorageMaintenance";
@@ -20,14 +21,16 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <LocalStorageMaintenance />
           <ConsentProvider>
             <HistoryProvider>
-              <ProfileProvider>
-                <SavedProjectsProvider>
-                  <MatchesProvider>
-                    {children}
-                    <AuthenticatedConsentBanner />
-                  </MatchesProvider>
-                </SavedProjectsProvider>
-              </ProfileProvider>
+              <BadgesProvider>
+                <ProfileProvider>
+                  <SavedProjectsProvider>
+                    <MatchesProvider>
+                      {children}
+                      <AuthenticatedConsentBanner />
+                    </MatchesProvider>
+                  </SavedProjectsProvider>
+                </ProfileProvider>
+              </BadgesProvider>
             </HistoryProvider>
           </ConsentProvider>
         </AuthProvider>

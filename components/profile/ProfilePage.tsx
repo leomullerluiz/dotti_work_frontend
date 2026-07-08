@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Download, ExternalLink, RotateCcw, UserPlus } from "lucide-react";
 import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
+import { BadgeProgressCard } from "@/components/badges/BadgeProgressCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnimatedDiv, AnimatedSection } from "@/components/ui/AnimatedSurface";
@@ -15,6 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useBadges } from "@/hooks/useBadges";
 import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
@@ -31,6 +33,14 @@ export function ProfilePage() {
     exportProfile,
   } = useProfile();
   const { session, status: authStatus } = useAuth();
+  const {
+    catalog: badgeCatalog,
+    earned: earnedBadges,
+    progress: badgeProgress,
+    isLoading: badgesLoading,
+    error: badgesError,
+    refreshBadges,
+  } = useBadges();
   const { savedProjects } = useSavedProjects();
   const { ignoredProjectIds, projects } = useMatches();
   const { history } = useHistory();
@@ -180,6 +190,21 @@ export function ProfilePage() {
         <StatCard label="In progress" value={stats.working} />
         <StatCard label="Completed" value={stats.contributed} />
       </div>
+
+      {authStatus === "authenticated" ? (
+        <div className="mt-5">
+          <BadgeProgressCard
+            earned={earnedBadges}
+            progress={badgeProgress}
+            totalBadges={badgeCatalog.length}
+            isLoading={badgesLoading}
+            error={badgesError}
+            onRetry={() => {
+              void refreshBadges();
+            }}
+          />
+        </div>
+      ) : null}
 
       {authStatus !== "authenticated" ? (
         <AnimatedDiv className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">

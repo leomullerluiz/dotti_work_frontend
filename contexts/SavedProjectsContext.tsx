@@ -24,6 +24,7 @@ import {
 import type { ApiUserRepositoryState } from "@/services/dotti/types";
 import type { MatchedProject, ProjectStatus, SavedProject } from "@/types";
 import { useAuth } from "./AuthContext";
+import { useBadges } from "./BadgesContext";
 import { useHistory } from "./HistoryContext";
 import { useToast } from "./ToastContext";
 
@@ -96,6 +97,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status } = useAuth();
+  const { refreshBadges } = useBadges();
   const { addHistory } = useHistory();
   const { showToast } = useToast();
 
@@ -223,6 +225,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         }
 
         showToast(`Status updated to ${statusValue}`);
+        void refreshBadges();
       } catch (updateError) {
         const message = messageForRepositoryStateError(updateError);
         setError(message);
@@ -230,7 +233,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         throw updateError;
       }
     },
-    [addHistory, applyState, showToast],
+    [addHistory, applyState, refreshBadges, showToast],
   );
 
   const saveProject = useCallback(
@@ -251,6 +254,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         }
 
         showToast("Project saved");
+        void refreshBadges();
       } catch (saveError) {
         const message = messageForRepositoryStateError(saveError);
         setError(message);
@@ -258,7 +262,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         throw saveError;
       }
     },
-    [addHistory, applyState, showToast],
+    [addHistory, applyState, refreshBadges, showToast],
   );
 
   const removeProject = useCallback(
@@ -271,6 +275,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
           ),
         );
         showToast("Project removed from saved", "info");
+        void refreshBadges();
       } catch (removeError) {
         const message = messageForRepositoryStateError(removeError);
         setError(message);
@@ -278,7 +283,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         throw removeError;
       }
     },
-    [showToast],
+    [refreshBadges, showToast],
   );
 
   const ignoreProject = useCallback(
@@ -299,6 +304,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         }
 
         showToast("Project ignored", "info");
+        void refreshBadges();
       } catch (ignoreError) {
         const message = messageForRepositoryStateError(ignoreError);
         setError(message);
@@ -306,7 +312,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         throw ignoreError;
       }
     },
-    [addHistory, applyState, showToast],
+    [addHistory, applyState, refreshBadges, showToast],
   );
 
   const restoreProject = useCallback(
@@ -315,6 +321,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         const nextState = await restoreRepository(repositoryId);
         applyState(nextState);
         showToast("Project restored");
+        void refreshBadges();
       } catch (restoreError) {
         const message = messageForRepositoryStateError(restoreError);
         setError(message);
@@ -322,7 +329,7 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         throw restoreError;
       }
     },
-    [applyState, showToast],
+    [applyState, refreshBadges, showToast],
   );
 
   const clearSaved = useCallback(async () => {
@@ -335,13 +342,14 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         ),
       );
       showToast("Saved projects cleared", "info");
+      void refreshBadges();
     } catch (clearError) {
       const message = messageForRepositoryStateError(clearError);
       setError(message);
       showToast(message, "error");
       throw clearError;
     }
-  }, [savedProjects, showToast]);
+  }, [refreshBadges, savedProjects, showToast]);
 
   const clearIgnored = useCallback(async () => {
     try {
@@ -359,13 +367,14 @@ export function SavedProjectsProvider({ children }: { children: ReactNode }) {
         ),
       );
       showToast("Ignored projects restored", "info");
+      void refreshBadges();
     } catch (clearError) {
       const message = messageForRepositoryStateError(clearError);
       setError(message);
       showToast(message, "error");
       throw clearError;
     }
-  }, [ignoredProjectIds, showToast]);
+  }, [ignoredProjectIds, refreshBadges, showToast]);
 
   const value = useMemo(
     () => ({

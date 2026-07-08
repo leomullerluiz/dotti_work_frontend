@@ -30,6 +30,7 @@ import {
 import type { DeveloperProfile } from "@/types";
 import { downloadJson } from "@/utils/format";
 import { useAuth } from "./AuthContext";
+import { useBadges } from "./BadgesContext";
 import { useToast } from "./ToastContext";
 
 type ProfileContextValue = {
@@ -62,6 +63,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status } = useAuth();
+  const { refreshBadges } = useBadges();
   const { showToast } = useToast();
 
   const loadProfile = useCallback(async () => {
@@ -195,6 +197,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
             : "Profile saved",
           skippedTechnologies.length > 0 ? "info" : "success",
         );
+        void refreshBadges();
       } catch (saveError) {
         const message = messageForProfileError(saveError);
         setError(message);
@@ -202,7 +205,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         throw saveError;
       }
     },
-    [setLocalProfile, showToast, status],
+    [refreshBadges, setLocalProfile, showToast, status],
   );
 
   const resetProfile = useCallback(async () => {
@@ -246,13 +249,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }),
       );
       showToast("Profile reset", "info");
+      void refreshBadges();
     } catch (resetError) {
       const message = messageForProfileError(resetError);
       setError(message);
       showToast(message, "error");
       throw resetError;
     }
-  }, [setLocalProfile, showToast, status]);
+  }, [refreshBadges, setLocalProfile, showToast, status]);
 
   const exportProfile = useCallback(() => {
     downloadJson("dotti-profile.json", profile);
