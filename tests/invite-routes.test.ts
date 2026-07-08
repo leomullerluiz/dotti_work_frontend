@@ -6,7 +6,7 @@ test("invite fallback route keeps the invite code in query string", () => {
   assert.equal(inviteFallbackHref("AbC123xYz"), "/invite/_?code=AbC123xYz");
 });
 
-test("invite paths can be recovered from static export 404", () => {
+test("invite paths can be recovered from a 404 fallback", () => {
   assert.deepEqual(parseInvitePath("/invite/AbC123xYz"), {
     code: "AbC123xYz",
   });

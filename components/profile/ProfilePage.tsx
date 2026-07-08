@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Download, ExternalLink, RotateCcw } from "lucide-react";
+import { Download, ExternalLink, RotateCcw, UserPlus } from "lucide-react";
 import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { AppShell } from "@/components/layout/AppShell";
@@ -122,6 +122,10 @@ export function ProfilePage() {
         description={`${profile.role} - ${profile.seniority} - ${profile.goal}`}
         actions={
           <>
+            <Link href="/settings/invites" className={buttonClasses({ variant: "outline" })}>
+              <UserPlus size={16} />
+              Invites
+            </Link>
             <Link href="/onboarding" className={buttonClasses({ variant: "outline" })}>
               <RotateCcw size={16} />
               Restart onboarding
