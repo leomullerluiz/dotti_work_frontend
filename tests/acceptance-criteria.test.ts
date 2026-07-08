@@ -63,6 +63,8 @@ test("acceptance criteria keep API services wired to OpenAPI endpoints", () => {
     ["services/dotti/account.ts", /\/me\/import-local-data/],
     ["services/dotti/account.ts", /\/me\/account/],
     ["services/dotti/consents.ts", /\/me\/consents/],
+    ["services/dotti/badges.ts", /\/badges/],
+    ["services/dotti/badges.ts", /\/me\/badges/],
   ] as const;
 
   for (const [path, expected] of expectations) {
