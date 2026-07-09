@@ -419,8 +419,11 @@ export type ApiBadge = {
 };
 
 export type ApiUserBadge = {
+  id: number;
   slug: string;
   awarded_at: string;
+  notification_seen: boolean;
+  notification_seen_at?: string | null;
   source_event_id?: number | null;
   progress_snapshot?: Record<string, unknown>;
   badge: ApiBadge;
@@ -532,4 +535,6 @@ export type ApiMyBadges = {
   earned: ApiUserBadge[];
   progress: ApiBadgeProgress[];
   recently_awarded: ApiUserBadge[];
+  unseen_awarded: ApiUserBadge[];
+  unseen_awarded_count: number;
 };

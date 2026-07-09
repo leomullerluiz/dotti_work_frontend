@@ -20,3 +20,28 @@ export function evaluateMyBadges() {
     method: "POST",
   });
 }
+
+export type BadgeNotificationViewedInput = {
+  slugs?: string[];
+  ids?: number[];
+  notification_seen?: boolean;
+};
+
+export type BadgeNotificationViewedResponse = {
+  updated_count: number;
+  recently_awarded: ApiUserBadge[];
+  unseen_awarded: ApiUserBadge[];
+  unseen_awarded_count: number;
+};
+
+export function markBadgeNotificationsViewed(
+  input: BadgeNotificationViewedInput,
+) {
+  return dottiRequest<BadgeNotificationViewedResponse>(
+    "/me/badges/notifications/viewed",
+    {
+      method: "POST",
+      body: input,
+    },
+  );
+}

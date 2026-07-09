@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { buttonClasses } from "@/components/ui/Button";
+import { useBadges } from "@/hooks/useBadges";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { cn } from "@/utils/cn";
 import { Logo } from "./Logo";
@@ -29,6 +30,7 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { unseenAwardedCount } = useBadges();
   const { savedProjects } = useSavedProjects();
 
   return (
@@ -38,6 +40,12 @@ export function AppSidebar() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const count =
+            item.href === "/saved"
+              ? savedProjects.length
+              : item.href === "/badges"
+                ? unseenAwardedCount
+                : 0;
 
           return (
             <Link
@@ -54,9 +62,9 @@ export function AppSidebar() {
                 <Icon size={18} />
                 {item.label}
               </span>
-              {item.href === "/saved" && savedProjects.length > 0 ? (
+              {count > 0 ? (
                 <span className="rounded-full bg-coral-500 px-2 py-0.5 text-[11px] text-white">
-                  {savedProjects.length}
+                  {count}
                 </span>
               ) : null}
             </Link>

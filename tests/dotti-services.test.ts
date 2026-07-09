@@ -844,6 +844,16 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       is_secret: false,
       display_order: 20,
     };
+    const userBadge = {
+      id: 12,
+      slug: "explorer",
+      awarded_at: "2026-07-09 10:00:00",
+      notification_seen: false,
+      notification_seen_at: null,
+      source_event_id: 99,
+      progress_snapshot: {},
+      badge,
+    };
 
     resetFetchMock();
     enqueueData({ badges: [badge] });
@@ -854,7 +864,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
 
     resetFetchMock();
     enqueueData({
-      earned: [],
+      earned: [userBadge],
       progress: [
         {
           slug: "explorer",
@@ -865,25 +875,57 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
           badge,
         },
       ],
-      recently_awarded: [],
+      recently_awarded: [userBadge],
+      unseen_awarded: [userBadge],
+      unseen_awarded_count: 1,
     });
     const myBadges = await badges.listMyBadges();
 
     assert.equal(lastUrl().pathname, "/api/me/badges");
     assert.equal(myBadges.progress[0]?.percent, 60);
+    assert.equal(myBadges.unseen_awarded_count, 1);
 
     resetFetchMock();
     enqueueData({
-      awarded: [],
-      earned: [],
+      awarded: [userBadge],
+      earned: [userBadge],
       progress: [],
-      recently_awarded: [],
+      recently_awarded: [userBadge],
+      unseen_awarded: [userBadge],
+      unseen_awarded_count: 1,
     });
     const evaluated = await badges.evaluateMyBadges();
 
     assert.equal(lastUrl().pathname, "/api/me/badges/evaluate");
     assert.equal(lastRequest().init?.method, "POST");
-    assert.deepEqual(evaluated.awarded, []);
+    assert.equal(evaluated.awarded[0]?.slug, "explorer");
+
+    resetFetchMock();
+    enqueueData({
+      updated_count: 1,
+      recently_awarded: [
+        {
+          ...userBadge,
+          notification_seen: true,
+          notification_seen_at: "2026-07-09 10:05:00",
+        },
+      ],
+      unseen_awarded: [],
+      unseen_awarded_count: 0,
+    });
+    const viewed = await badges.markBadgeNotificationsViewed({
+      slugs: ["explorer"],
+      notification_seen: true,
+    });
+
+    assert.equal(lastUrl().pathname, "/api/me/badges/notifications/viewed");
+    assert.equal(lastRequest().init?.method, "POST");
+    assertJsonBody({
+      slugs: ["explorer"],
+      notification_seen: true,
+    });
+    assert.equal(viewed.updated_count, 1);
+    assert.equal(viewed.unseen_awarded_count, 0);
   });
 
   await t.test("public profile service uses public and authenticated endpoints", async () => {
