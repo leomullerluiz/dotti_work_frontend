@@ -1,6 +1,5 @@
 import { ProjectDetailPage } from "@/components/projects/ProjectDetailPage";
 import { RequireAuth } from "@/components/auth/RequireAuth";
-import { AppProviders } from "@/contexts/AppProviders";
 
 type ProjectRouteProps = {
   params: Promise<{
@@ -21,10 +20,8 @@ export function generateStaticParams() {
 export default async function ProjectRoute({ params }: ProjectRouteProps) {
   const { owner, repo } = await params;
   return (
-    <AppProviders>
-      <RequireAuth>
-        <ProjectDetailPage owner={owner} repo={repo} />
-      </RequireAuth>
-    </AppProviders>
+    <RequireAuth>
+      <ProjectDetailPage owner={owner} repo={repo} />
+    </RequireAuth>
   );
 }

@@ -3,7 +3,6 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProjectDetailFromSearchParams } from "@/components/projects/ProjectDetailFromSearchParams";
 import { SkeletonProjectCard } from "@/components/ui/SkeletonProjectCard";
-import { AppProviders } from "@/contexts/AppProviders";
 
 function ProjectDetailFallback() {
   return (
@@ -20,12 +19,10 @@ function ProjectDetailFallback() {
 
 export default function ProjectRoute() {
   return (
-    <AppProviders>
-      <RequireAuth>
-        <Suspense fallback={<ProjectDetailFallback />}>
-          <ProjectDetailFromSearchParams />
-        </Suspense>
-      </RequireAuth>
-    </AppProviders>
+    <RequireAuth>
+      <Suspense fallback={<ProjectDetailFallback />}>
+        <ProjectDetailFromSearchParams />
+      </Suspense>
+    </RequireAuth>
   );
 }

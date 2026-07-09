@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SentryExamplePage } from "@/components/sentry/SentryExamplePage";
-import { AppProviders } from "@/contexts/AppProviders";
 
 export const metadata: Metadata = {
   title: "Sentry test - dotti.work",
@@ -10,9 +9,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-static";
 
 export default function SentryExampleRoute() {
-  return (
-    <AppProviders>
-      <SentryExamplePage />
-    </AppProviders>
-  );
+  return <SentryExamplePage />;
 }
