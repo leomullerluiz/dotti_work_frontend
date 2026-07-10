@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   Award,
   Bookmark,
-  History,
   LayoutDashboard,
   RotateCcw,
   Settings,
@@ -24,7 +23,7 @@ const navItems = [
   { href: "/matches", label: "Matches", icon: LayoutDashboard },
   { href: "/top-repositories", label: "Top repositories", icon: Trophy },
   { href: "/saved", label: "Saved projects", icon: Bookmark },
-  { href: "/history", label: "History", icon: History },
+  // { href: "/history", label: "History", icon: History },
   { href: "/badges", label: "Achievements", icon: Award },
   { href: "/profile", label: "Profile", icon: UserRound },
   { href: "/settings", label: "Settings", icon: Settings },

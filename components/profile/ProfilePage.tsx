@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Download, ExternalLink, RotateCcw, UserPlus } from "lucide-react";
+import {
+  Copy,
+  Download,
+  ExternalLink,
+  History,
+  RotateCcw,
+  Share2,
+  UserPlus,
+} from "lucide-react";
 import { GitHubAvatar } from "@/components/account/GitHubAvatar";
 import { GitHubIntegrationCard } from "@/components/account/GitHubIntegrationCard";
 import { BadgeProgressCard } from "@/components/badges/BadgeProgressCard";
@@ -21,7 +29,12 @@ import { useHistory } from "@/hooks/useHistory";
 import { useMatches } from "@/hooks/useMatches";
 import { useProfile } from "@/hooks/useProfile";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
+import { useToast } from "@/contexts/ToastContext";
 import type { TechCategory, UserTechnology } from "@/types";
+import {
+  fallbackPublicProfileUrl,
+  publicProfileHref,
+} from "@/utils/publicProfileRoutes";
 
 export function ProfilePage() {
   const {
@@ -44,6 +57,7 @@ export function ProfilePage() {
   const { savedProjects } = useSavedProjects();
   const { ignoredProjectIds, projects } = useMatches();
   const { history } = useHistory();
+  const { showToast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const groupedTechnologies = useMemo<Partial<Record<TechCategory, UserTechnology[]>>>(
@@ -73,6 +87,25 @@ export function ProfilePage() {
   const githubProfileUrl =
     session?.user.github_profile_url ??
     (session?.user.login ? `https://github.com/${session.user.login}` : null);
+  const publicProfilePath = session?.user.login
+    ? publicProfileHref(session.user.login)
+    : null;
+  const publicProfileUrl = session?.user.login
+    ? fallbackPublicProfileUrl(session.user.login)
+    : null;
+
+  const copyPublicProfileUrl = async () => {
+    if (!publicProfileUrl) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(publicProfileUrl);
+      showToast("Public profile link copied");
+    } catch {
+      showToast("Could not copy the public profile link.", "error");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -132,6 +165,10 @@ export function ProfilePage() {
         description={`${profile.role} - ${profile.seniority} - ${profile.goal}`}
         actions={
           <>
+            <Link href="/history" className={buttonClasses({ variant: "outline" })}>
+              <History size={16} />
+              History
+            </Link>
             <Link href="/settings/invites" className={buttonClasses({ variant: "outline" })}>
               <UserPlus size={16} />
               Invites
@@ -168,17 +205,40 @@ export function ProfilePage() {
               </p>
             </div>
           </div>
-          {githubProfileUrl ? (
-            <a
-              href={githubProfileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={buttonClasses({ variant: "outline" })}
-            >
-              <ExternalLink size={16} />
-              Github Profile
-            </a>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {githubProfileUrl ? (
+              <a
+                href={githubProfileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={buttonClasses({ variant: "outline" })}
+              >
+                <ExternalLink size={16} />
+                GitHub Profile
+              </a>
+            ) : null}
+            {publicProfilePath ? (
+              <Link
+                href={publicProfilePath}
+                className={buttonClasses({ variant: "outline" })}
+              >
+                <Share2 size={16} />
+                Public profile
+              </Link>
+            ) : null}
+            {publicProfileUrl ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  void copyPublicProfileUrl();
+                }}
+              >
+                <Copy size={16} />
+                Copy public link
+              </Button>
+            ) : null}
+          </div>
         </div>
       </AnimatedSection>
 
