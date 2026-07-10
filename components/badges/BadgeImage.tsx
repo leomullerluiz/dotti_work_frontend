@@ -61,8 +61,8 @@ export function BadgeImage({
         <Image
           src={normalizedImageUrl}
           alt={imageAlt ?? "Achievement badge"}
-          width={40}
-          height={40}
+          width={60}
+          height={60}
           unoptimized
           className={cn("size-10 rounded-md object-contain", earned ? "" : "grayscale")}
           onError={() => setImageFailed(true)}

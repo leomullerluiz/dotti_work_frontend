@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HomeLandingPage } from "@/components/landing/HomeLandingPage";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export const metadata: Metadata = {
   title: "dotti.work - Open source project matching",
@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-static";
 
-export default function Home() {
-  return <HomeLandingPage />;
+export default function LandingRoute() {
+  return <LandingPage />;
 }

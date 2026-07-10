@@ -34,9 +34,9 @@ const sortOptions: Array<{
   label: string;
   icon: typeof Star;
 }> = [
-  { value: "stars", label: "Mais estrelas", icon: Star },
-  { value: "open_issues", label: "Mais issues", icon: CircleDot },
-  { value: "contributors", label: "Mais contribuidores", icon: Users },
+  { value: "stars", label: "Most stars", icon: Star },
+  { value: "open_issues", label: "Most issues", icon: CircleDot },
+  { value: "contributors", label: "Most contributors", icon: Users },
 ];
 
 function normalizeSort(value: string | null): ApiTopRepositorySortBy {
@@ -49,10 +49,10 @@ function normalizeSort(value: string | null): ApiTopRepositorySortBy {
 
 function errorMessageForTopRepositories(error: unknown) {
   return apiErrorMessage(error, {
-    fallback: "Nao foi possivel carregar o ranking de repositorios.",
-    unauthorized: "Sua sessao expirou. Entre novamente para ver o ranking.",
-    validation: "O filtro selecionado nao foi aceito pela API.",
-    unavailable: "O ranking esta temporariamente indisponivel. Tente novamente em instantes.",
+    fallback: "Could not load the repository ranking.",
+    unauthorized: "Your session expired. Sign in again to view the ranking.",
+    validation: "The selected filter was rejected by the API.",
+    unavailable: "The ranking is temporarily unavailable. Try again shortly.",
   });
 }
 
@@ -99,11 +99,10 @@ export function TopRepositoriesPage() {
         if (isCurrent) {
           setTechnologyError(
             apiErrorMessage(loadError, {
-              fallback: "Nao foi possivel carregar as tecnologias.",
-              unauthorized: "Entre novamente para carregar tecnologias.",
-              validation: "A consulta de tecnologias foi rejeitada pela API.",
-              unavailable:
-                "O catalogo de tecnologias esta temporariamente indisponivel.",
+              fallback: "Could not load technologies.",
+              unauthorized: "Sign in again to load technologies.",
+              validation: "The technology request was rejected by the API.",
+              unavailable: "The technology catalog is temporarily unavailable.",
             }),
           );
         }
@@ -174,7 +173,7 @@ export function TopRepositoriesPage() {
 
   const activeSortLabel =
     sortOptions.find((option) => option.value === activeSort)?.label ??
-    "Mais estrelas";
+    "Most stars";
 
   const updateUrl = (
     sortBy: ApiTopRepositorySortBy,
@@ -238,8 +237,8 @@ export function TopRepositoriesPage() {
       <PageHeader
         eyebrow="Discovery"
         title="Top repositories"
-        description={`${items.length} repositorios carregados por ${activeSortLabel.toLowerCase()}${
-          activeTechnology ? ` em ${activeTechnology.name}` : ""
+        description={`${items.length} repositories loaded by ${activeSortLabel.toLowerCase()}${
+          activeTechnology ? ` in ${activeTechnology.name}` : ""
         }.`}
       />
 
@@ -249,7 +248,7 @@ export function TopRepositoriesPage() {
             <div
               className="inline-grid grid-cols-3 rounded-lg border border-zinc-200 bg-zinc-100 p-1 dark:border-white/10 dark:bg-white/[0.04]"
               role="tablist"
-              aria-label="Ordenacao de top repositories"
+              aria-label="Top repositories sort"
             >
               {sortOptions.map((option) => {
                 const Icon = option.icon;
@@ -282,7 +281,7 @@ export function TopRepositoriesPage() {
                 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500"
               >
                 <Filter size={14} />
-                Tecnologia
+                Technology
               </label>
               <select
                 id="top-repositories-technology"
@@ -291,7 +290,7 @@ export function TopRepositoriesPage() {
                 disabled={isLoadingTechnologies}
                 className="min-h-10 rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-700 shadow-sm outline-none transition focus:border-coral-400 focus:ring-2 focus:ring-coral-400/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-200"
               >
-                <option value="">Todas</option>
+                <option value="">All</option>
                 {technologies.map((technology) => (
                   <option key={technology.slug} value={technology.slug}>
                     {technology.name}
@@ -317,8 +316,8 @@ export function TopRepositoriesPage() {
             <EmptyState
               title={
                 errorStatus === 422
-                  ? "Filtro invalido"
-                  : "Nao foi possivel carregar o ranking"
+                  ? "Invalid filter"
+                  : "Could not load the ranking"
               }
               description={error}
               action={
@@ -329,7 +328,7 @@ export function TopRepositoriesPage() {
                       variant="outline"
                       onClick={clearTechnologyFilter}
                     >
-                      Limpar filtro
+                      Clear filter
                     </Button>
                   ) : null}
                   <Button
@@ -337,23 +336,23 @@ export function TopRepositoriesPage() {
                     onClick={() => setReloadKey((current) => current + 1)}
                   >
                     <RefreshCcw size={16} />
-                    Tentar novamente
+                    Try again
                   </Button>
                 </div>
               }
             />
           ) : items.length === 0 ? (
             <EmptyState
-              title="Nenhum repositorio encontrado"
+              title="No repositories found"
               description={
                 activeTechnology
-                  ? `Nao ha repositorios populares para ${activeTechnology.name} neste ranking.`
-                  : "A API nao retornou repositorios para este ranking."
+                  ? `There are no popular repositories for ${activeTechnology.name} in this ranking.`
+                  : "The API did not return repositories for this ranking."
               }
               action={
                 activeTechnology ? (
                   <Button type="button" onClick={clearTechnologyFilter}>
-                    Ver todas
+                    All
                   </Button>
                 ) : undefined
               }
@@ -384,7 +383,7 @@ export function TopRepositoriesPage() {
                       size={16}
                       className={isLoadingMore ? "animate-spin" : ""}
                     />
-                    {isLoadingMore ? "Carregando..." : "Carregar mais"}
+                    {isLoadingMore ? "Loading..." : "Load more"}
                   </Button>
                 </div>
               ) : null}
@@ -396,23 +395,23 @@ export function TopRepositoriesPage() {
           <StatCard
             label="Ranking"
             value={activeSortLabel}
-            helper={activeTechnology ? activeTechnology.name : "Todas tecnologias"}
+            helper={activeTechnology ? activeTechnology.name : "All technologies"}
             icon={<Trophy size={18} />}
           />
           <StatCard
-            label="Carregados"
+            label="Loaded"
             value={formatNumber(items.length)}
-            helper={metadata?.cached ? "Resultado em cache" : "Resultado atualizado"}
+            helper={metadata?.cached ? "Cached result" : "Updated result"}
             icon={<Star size={18} />}
           />
           <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
             <h2 className="font-semibold text-zinc-950 dark:text-white">
-              Filtro ativo
+              Active filter
             </h2>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge tone="accent">{activeSortLabel}</Badge>
               <Badge tone={activeTechnology ? "blue" : "neutral"}>
-                {activeTechnology?.name ?? "Todas"}
+                {activeTechnology?.name ?? "All"}
               </Badge>
             </div>
           </AnimatedDiv>

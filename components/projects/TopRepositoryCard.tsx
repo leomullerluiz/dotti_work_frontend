@@ -27,19 +27,19 @@ import { RepositoryAvatar } from "./RepositoryAvatar";
 import { StackBadge } from "./StackBadge";
 
 const metricLabels: Record<ApiTopRepositorySortBy, string> = {
-  stars: "Estrelas",
-  open_issues: "Issues abertas",
-  contributors: "Contribuidores",
+  stars: "Stars",
+  open_issues: "Open issues",
+  contributors: "Contributors",
 };
 
 const stateLabels: Record<ApiRepositoryStateValue, string> = {
-  saved: "Salvo",
-  ignored: "Ignorado",
-  researching: "Pesquisando",
-  working: "Trabalhando",
-  pull_request_sent: "PR enviado",
-  contributed: "Contribuiu",
-  archived: "Arquivado",
+  saved: "Saved",
+  ignored: "Ignored",
+  researching: "Researching",
+  working: "Working",
+  pull_request_sent: "PR sent",
+  contributed: "Contributed",
+  archived: "Archived",
 };
 
 export function TopRepositoryCard({
@@ -112,7 +112,7 @@ export function TopRepositoryCard({
               ) : null}
             </div>
             <p className="mt-3 line-clamp-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-              {project.description || "Sem descricao disponivel para este repositorio."}
+              {project.description || "No description available for this repository."}
             </p>
           </div>
         </div>
@@ -162,14 +162,16 @@ export function TopRepositoryCard({
             className={buttonClasses({ variant: "outline", size: "sm" })}
           >
             <Eye size={15} />
-            Detalhes
+            Details
           </Link>
           <Button
             type="button"
             variant={saved ? "outline" : "primary"}
             size="sm"
             disabled={!canSave}
-            title={canSave ? undefined : "Repositorio sem GitHub ID para salvar"}
+            title={
+              canSave ? undefined : "Repository does not include a GitHub ID to save."
+            }
             onClick={() => {
               if (!canSave) {
                 return;
@@ -181,7 +183,7 @@ export function TopRepositoryCard({
             }}
           >
             {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-            {saved ? "Salvo" : "Salvar"}
+            {saved ? "Saved" : "Save"}
           </Button>
           <a
             href={project.githubUrl}
