@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Award,
   Bookmark,
@@ -43,7 +44,8 @@ export function BadgeImage({
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const Icon = secret && !earned ? LockKeyhole : iconMap[icon ?? ""] ?? Award;
-  const showImage = Boolean(imageUrl) && !imageFailed && (!secret || earned);
+  const normalizedImageUrl = imageUrl?.trim();
+  const showImage = Boolean(normalizedImageUrl) && !imageFailed && (!secret || earned);
 
   return (
     <div
@@ -55,11 +57,13 @@ export function BadgeImage({
         className,
       )}
     >
-      {showImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageUrl ?? undefined}
+      {showImage && normalizedImageUrl ? (
+        <Image
+          src={normalizedImageUrl}
           alt={imageAlt ?? "Achievement badge"}
+          width={40}
+          height={40}
+          unoptimized
           className={cn("size-10 rounded-md object-contain", earned ? "" : "grayscale")}
           onError={() => setImageFailed(true)}
         />
