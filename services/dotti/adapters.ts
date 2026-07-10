@@ -39,6 +39,7 @@ import type {
   ApiRepositoryStateValue,
   ApiRepositorySummary,
   ApiTechnology,
+  ApiTopRepositoryItem,
   ApiTechnologyCategory,
   ApiUser,
   ApiUserPreference,
@@ -203,6 +204,7 @@ export function adaptApiRepositorySummaryToMatchedProject(
     forks: repository.forks ?? 0,
     watchers: repository.watchers ?? 0,
     openIssues: repository.open_issues ?? 0,
+    contributors: repository.contributors ?? 0,
     goodFirstIssues: repository.good_first_issues ?? 0,
     helpWantedIssues: repository.help_wanted_issues ?? 0,
     topics: repository.topics ?? [],
@@ -255,6 +257,12 @@ export function adaptApiMatchToMatchedProject(
   }, {
     match: mergeMatchFields(item),
   });
+}
+
+export function adaptApiTopRepositoryItemToMatchedProject(
+  item: ApiTopRepositoryItem,
+): MatchedProject {
+  return adaptApiRepositorySummaryToMatchedProject(item.repository);
 }
 
 export function adaptApiRepositoryIssue(

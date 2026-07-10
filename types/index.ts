@@ -128,6 +128,7 @@ export type Repository = {
   forks: number;
   watchers: number;
   openIssues: number;
+  contributors?: number;
   goodFirstIssues: number;
   helpWantedIssues: number;
   topics: string[];

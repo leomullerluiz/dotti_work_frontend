@@ -8,6 +8,7 @@ import {
   adaptApiRepositoryIssue,
   adaptApiRepositoryStates,
   adaptApiRepositorySummaryToMatchedProject,
+  adaptApiTopRepositoryItemToMatchedProject,
   adaptApiUserRepositoryState,
   developerProfileToApiProfileInput,
   developerProfileToApiTechnologyInputs,
@@ -21,6 +22,7 @@ import type {
   ApiRepositoryIssue,
   ApiRepositoryMatchItem,
   ApiRepositorySummary,
+  ApiTopRepositoryItem,
   ApiUserRepositoryState,
 } from "../services/dotti/types";
 import {
@@ -292,6 +294,7 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
       forks: 1320,
       watchers: 420,
       open_issues: 112,
+      contributors: 34,
       good_first_issues: 18,
       help_wanted_issues: 24,
       license: "MIT",
@@ -328,6 +331,7 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     assert.equal(project.githubUrl, "https://github.com/open-nova/nova-ui");
     assert.equal(project.website, "https://nova-ui.example");
     assert.deepEqual(project.languages, ["TypeScript", "React"]);
+    assert.equal(project.contributors, 34);
     assert.equal(project.size, "Large");
     assert.equal(project.activity, "Very active");
     assert.equal(project.healthScore, 94);
@@ -373,6 +377,38 @@ test("dotti API adapters normalize backend DTOs into visual types", async (t) =>
     assert.deepEqual(project.matchReasons, ["Beginner-friendly labels."]);
     assert.deepEqual(project.sharedTechnologies, ["PHP"]);
     assert.equal(project.githubUrl, "https://github.com/laravel-signal/pulse-kit");
+  });
+
+  await t.test("adapts top repository items without losing repository metrics", () => {
+    const item: ApiTopRepositoryItem = {
+      repository: {
+        github_repository_id: 77,
+        owner: "signal-kit",
+        name: "runtime",
+        full_name: "signal-kit/runtime",
+        description: "Reactive runtime utilities.",
+        stars: 5200,
+        open_issues: 41,
+        contributors: 18,
+        primary_language: "TypeScript",
+      },
+      rank: 2,
+      rank_metric: {
+        type: "open_issues",
+        value: 41,
+      },
+      user_state: "saved",
+    };
+
+    const project = adaptApiTopRepositoryItemToMatchedProject(item);
+
+    assert.equal(project.id, "77");
+    assert.equal(project.owner, "signal-kit");
+    assert.equal(project.repo, "runtime");
+    assert.equal(project.stars, 5200);
+    assert.equal(project.openIssues, 41);
+    assert.equal(project.contributors, 18);
+    assert.deepEqual(project.languages, ["TypeScript"]);
   });
 
   await t.test("adapts RepositoryDetail with health and API issues", () => {

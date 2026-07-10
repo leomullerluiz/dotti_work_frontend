@@ -90,6 +90,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
       ["  /matches:", "operationId: listMatches"],
       ["  /matches/refresh:", "operationId: refreshMatches"],
       ["  /matches/{githubRepositoryId}:", "operationId: getMatchByRepositoryId"],
+      ["  /repositories/top:", "operationId: listTopRepositories"],
       ["  /repositories/{owner}/{repo}:", "operationId: getRepository"],
       ["  /repositories/{owner}/{repo}/issues:", "operationId: listRepositoryIssues"],
       ["  /repositories/{owner}/{repo}/activity:", "operationId: createRepositoryActivity"],
@@ -139,6 +140,7 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
   const account = await import("../services/dotti/account");
   const auth = await import("../services/dotti/auth");
   const matches = await import("../services/dotti/matches");
+  const topRepositories = await import("../services/dotti/topRepositories");
   const repositories = await import("../services/dotti/repositories");
   const repositoryStates = await import("../services/dotti/repositoryStates");
   const history = await import("../services/dotti/history");
@@ -215,6 +217,55 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     await matches.getMatch(123);
 
     assert.equal(lastUrl().pathname, "/api/matches/123");
+  });
+
+  await t.test("top repositories service serializes ranking filters", async () => {
+    resetFetchMock();
+    enqueueData({
+      items: [
+        {
+          repository: {
+            github_repository_id: 123,
+            owner: "open-nova",
+            name: "nova-ui",
+            stars: 1000,
+            open_issues: 20,
+            contributors: 12,
+          },
+          rank: 1,
+          rank_metric: {
+            type: "contributors",
+            value: 12,
+          },
+          user_state: null,
+        },
+      ],
+      pagination: { next_cursor: "page-2" },
+      metadata: {
+        sort_by: "contributors",
+        technology: "typescript",
+        generated_at: "2026-07-10T12:00:00Z",
+        cached: true,
+      },
+    });
+
+    const response = await topRepositories.listTopRepositories({
+      sort_by: "contributors",
+      technology: "typescript",
+      limit: 30,
+      cursor: "abc",
+    });
+
+    const url = lastUrl();
+    assert.equal(url.pathname, "/api/repositories/top");
+    assert.equal(url.searchParams.get("sort_by"), "contributors");
+    assert.equal(url.searchParams.get("technology"), "typescript");
+    assert.equal(url.searchParams.get("limit"), "30");
+    assert.equal(url.searchParams.get("cursor"), "abc");
+    assert.equal(lastRequest().init?.cache, "no-store");
+    assert.equal(lastRequest().init?.credentials, "include");
+    assert.equal(response.items[0]?.repository.contributors, 12);
+    assert.equal(response.metadata?.cached, true);
   });
 
   await t.test("repositories service uses detail, issues, and activity endpoints", async () => {
@@ -1036,6 +1087,23 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
         assert.equal(error.code, "rate_limited");
         assert.equal(error.message, "Tente novamente mais tarde.");
         assert.deepEqual(error.details, { retry_after: 60 });
+        return true;
+      },
+    );
+
+    resetFetchMock();
+    enqueueError(503, {
+      code: "service_unavailable",
+      message: "Ranking temporariamente indisponivel.",
+    });
+
+    await assert.rejects(
+      () => topRepositories.listTopRepositories({ sort_by: "stars" }),
+      (error: unknown) => {
+        assert.ok(error instanceof client.DottiApiError);
+        assert.equal(error.status, 503);
+        assert.equal(error.code, "service_unavailable");
+        assert.equal(error.message, "Ranking temporariamente indisponivel.");
         return true;
       },
     );

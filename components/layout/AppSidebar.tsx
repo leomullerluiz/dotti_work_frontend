@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   RotateCcw,
   Settings,
+  Trophy,
   UserRound,
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
@@ -21,6 +22,7 @@ import { ProfileSummaryCard } from "./ProfileSummaryCard";
 
 const navItems = [
   { href: "/matches", label: "Matches", icon: LayoutDashboard },
+  { href: "/top-repositories", label: "Top repositories", icon: Trophy },
   { href: "/saved", label: "Saved projects", icon: Bookmark },
   { href: "/history", label: "History", icon: History },
   { href: "/badges", label: "Achievements", icon: Award },

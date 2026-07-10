@@ -45,6 +45,13 @@ export type ApiSortBy =
   | "beginner_friendly"
   | "recently_updated";
 
+export type ApiTopRepositorySortBy = "stars" | "open_issues" | "contributors";
+
+export type ApiTopRepositoryRankMetric = {
+  type: ApiTopRepositorySortBy;
+  value: number;
+};
+
 export type ApiTechnologyCategory =
   | "language"
   | "framework"
@@ -194,6 +201,7 @@ export type ApiRepositorySummary = {
   forks?: number;
   watchers?: number;
   open_issues?: number;
+  contributors?: number;
   good_first_issues?: number;
   help_wanted_issues?: number;
   license?: string | null;
@@ -254,6 +262,20 @@ export type ApiRepositoryMatchItem = {
   repository: ApiRepositorySummary;
   match: ApiMatch;
   user_state: ApiRepositoryStateValue | null;
+};
+
+export type ApiTopRepositoryItem = {
+  repository: ApiRepositorySummary;
+  rank: number;
+  rank_metric: ApiTopRepositoryRankMetric;
+  user_state: ApiRepositoryStateValue | null;
+};
+
+export type ApiTopRepositoryListMetadata = {
+  sort_by: ApiTopRepositorySortBy;
+  technology?: string | null;
+  generated_at?: string | null;
+  cached?: boolean;
 };
 
 export type ApiRepositoryHealth = {
