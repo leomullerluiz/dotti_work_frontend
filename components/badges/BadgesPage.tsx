@@ -143,16 +143,6 @@ export function BadgesPage() {
           value={progress.filter((item) => !item.completed).length}
           helper={nextProgress ? `${nextProgress.badge.name} is closest` : "No active progress"}
         />
-        <BadgeProgressCard
-          earned={earned}
-          progress={progress}
-          totalBadges={badges.length}
-          isLoading={isLoading}
-          error={error}
-          onRetry={() => {
-            void refreshBadges();
-          }}
-        />
       </div>
 
       {badges.length === 0 ? (

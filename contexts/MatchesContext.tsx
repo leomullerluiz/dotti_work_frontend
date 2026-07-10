@@ -13,7 +13,6 @@ import { DEFAULT_FILTERS, STORAGE_KEYS } from "@/data/constants";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { adaptApiMatchToMatchedProject } from "@/services/dotti/adapters";
 import { apiErrorMessage } from "@/services/dotti/apiErrorState";
-import { matchFiltersToApiParams } from "@/services/dotti/matchFilters";
 import {
   listMatches,
   refreshMatches as refreshMatchesFromApi,
@@ -42,88 +41,6 @@ type MatchesContextValue = {
 };
 
 const MatchesContext = createContext<MatchesContextValue | null>(null);
-
-function filterProjects(
-  projects: MatchedProject[],
-  filters: TechnologyFilter,
-  ignoredProjectIds: string[],
-) {
-  const query = filters.query.trim().toLowerCase();
-
-  const filtered = projects.filter((project) => {
-    if (ignoredProjectIds.includes(project.id)) {
-      return false;
-    }
-
-    const searchBlob = [
-      project.owner,
-      project.repo,
-      project.name,
-      project.description,
-      ...project.languages,
-      ...project.topics,
-    ]
-      .join(" ")
-      .toLowerCase();
-
-    if (query && !searchBlob.includes(query)) {
-      return false;
-    }
-
-    if (
-      filters.technologies.length > 0 &&
-      !filters.technologies.some((tech) => project.languages.includes(tech))
-    ) {
-      return false;
-    }
-
-    if (filters.difficulty !== "All" && project.difficulty !== filters.difficulty) {
-      return false;
-    }
-
-    if (filters.projectSize !== "All" && project.size !== filters.projectSize) {
-      return false;
-    }
-
-    if (filters.activity !== "All" && project.activity !== filters.activity) {
-      return false;
-    }
-
-    if (filters.hasGoodFirstIssue && project.goodFirstIssues === 0) {
-      return false;
-    }
-
-    if (filters.hasHelpWanted && project.helpWantedIssues === 0) {
-      return false;
-    }
-
-    if (project.stars < filters.minimumStars) {
-      return false;
-    }
-
-    if (filters.language !== "All" && !project.languages.includes(filters.language)) {
-      return false;
-    }
-
-    return project.healthScore >= filters.healthScore;
-  });
-
-  return [...filtered].sort((a, b) => {
-    switch (filters.sortBy) {
-      case "Most active":
-        return b.activityScore - a.activityScore;
-      case "Most stars":
-        return b.stars - a.stars;
-      case "Most beginner friendly":
-        return b.goodFirstIssues - a.goodFirstIssues;
-      case "Recently updated":
-        return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
-      case "Best match":
-      default:
-        return b.matchScore - a.matchScore;
-    }
-  });
-}
 
 function messageForMatchesError(error: unknown) {
   return apiErrorMessage(error, {
@@ -171,7 +88,7 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     setError(null);
 
     try {
-      const response = await listMatches(matchFiltersToApiParams(filters));
+      const response = await listMatches();
       setApiProjects(response.items.map(adaptApiMatchToMatchedProject));
       setHasLoaded(true);
     } catch (loadError) {
@@ -181,7 +98,7 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, status]);
+  }, [status]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -199,7 +116,7 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       try {
-        const response = await listMatches(matchFiltersToApiParams(filters));
+        const response = await listMatches();
         if (!isCurrent) {
           return;
         }
@@ -224,11 +141,14 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     return () => {
       isCurrent = false;
     };
-  }, [filters, status]);
+  }, [status]);
 
   const projects = useMemo(
-    () => filterProjects(apiProjects, filters, ignoredProjectIds),
-    [apiProjects, filters, ignoredProjectIds],
+    () =>
+      apiProjects
+        .filter((project) => !ignoredProjectIds.includes(project.id))
+        .sort((first, second) => second.matchScore - first.matchScore),
+    [apiProjects, ignoredProjectIds],
   );
 
   const availableLanguages = useMemo(

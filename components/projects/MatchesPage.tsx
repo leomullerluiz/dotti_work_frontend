@@ -1,31 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Filter, RefreshCcw, UserRound } from "lucide-react";
+import { BarChart3, Eye, RefreshCcw, UserRound } from "lucide-react";
 import { BadgeProgressCard } from "@/components/badges/BadgeProgressCard";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { AnimatedDetails, AnimatedDiv } from "@/components/ui/AnimatedSurface";
-import { Badge } from "@/components/ui/Badge";
+import { AnimatedDiv } from "@/components/ui/AnimatedSurface";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { StatCard } from "@/components/ui/StatCard";
 import { useMatches } from "@/hooks/useMatches";
 import { useBadges } from "@/hooks/useBadges";
-import { useProfile } from "@/hooks/useProfile";
-import { ProjectFilters } from "./ProjectFilters";
+import { projectDetailHref } from "@/utils/projectRoutes";
 import { ProjectGrid } from "./ProjectGrid";
 
 export function MatchesPage() {
   const {
     projects,
-    filters,
     isLoading,
     isRefreshing,
     error,
     refreshMatches,
     retryMatches,
-    ignoredProjectIds,
   } = useMatches();
   const {
     catalog: badgeCatalog,
@@ -35,8 +30,8 @@ export function MatchesPage() {
     error: badgesError,
     refreshBadges,
   } = useBadges();
-  const { profile } = useProfile();
   const canRefresh = !isLoading && !isRefreshing;
+  const bestMatch = projects[0];
 
   const refreshAndScrollToTop = () => {
     refreshMatches();
@@ -51,7 +46,7 @@ export function MatchesPage() {
       <PageHeader
         eyebrow="Matches"
         title="Projects matching your profile"
-        description={`${projects.length} repositories match your current filters and API-backed preferences.`}
+        description={`${projects.length} repositories returned from your API-backed recommendations.`}
         actions={
           <>
             <Button
@@ -71,22 +66,7 @@ export function MatchesPage() {
         }
       />
 
-      <div className="grid gap-5 lg:grid-cols-[280px_1fr_300px]">
-        <div className="lg:sticky lg:top-24 lg:h-fit">
-          <AnimatedDetails className="mb-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04] lg:hidden">
-            <summary className="flex cursor-pointer items-center gap-2 font-medium text-zinc-950 dark:text-white">
-              <Filter size={17} />
-              Filters
-            </summary>
-            <div className="mt-4">
-              <ProjectFilters />
-            </div>
-          </AnimatedDetails>
-          <div className="hidden lg:block">
-            <ProjectFilters />
-          </div>
-        </div>
-
+      <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0">
           {error ? (
             <EmptyState
@@ -141,12 +121,37 @@ export function MatchesPage() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
-          <StatCard
-            label="Best match"
-            value={projects[0] ? `${projects[0].matchScore}%` : "0%"}
-            helper={projects[0] ? `${projects[0].owner}/${projects[0].repo}` : "No result"}
-            icon={<BarChart3 size={18} />}
-          />
+          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-lg hover:shadow-coral-500/5 dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Best match
+                </p>
+                <div className="mt-2 text-2xl font-semibold text-zinc-950 dark:text-white">
+                  {bestMatch ? `${bestMatch.matchScore}%` : "0%"}
+                </div>
+              </div>
+              <div className="flex size-10 items-center justify-center rounded-lg bg-coral-400/10 text-coral-500">
+                <BarChart3 size={18} />
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-500">
+              {bestMatch ? `${bestMatch.owner}/${bestMatch.repo}` : "No result"}
+            </p>
+            {bestMatch ? (
+              <Link
+                href={projectDetailHref(bestMatch.owner, bestMatch.repo)}
+                className={buttonClasses({
+                  variant: "outline",
+                  size: "sm",
+                  className: "mt-4 w-full",
+                })}
+              >
+                <Eye size={15} />
+                View repository
+              </Link>
+            ) : null}
+          </AnimatedDiv>
           <BadgeProgressCard
             earned={earnedBadges}
             progress={badgeProgress}
@@ -157,41 +162,6 @@ export function MatchesPage() {
               void refreshBadges();
             }}
           />
-          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <h2 className="font-semibold text-zinc-950 dark:text-white">
-              Profile insights
-            </h2>
-            {profile ? (
-              <>
-                <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  Recommendations are tuned for a {profile.seniority}{" "}
-                  {profile.role.toLowerCase()} focused on {profile.goal.toLowerCase()}.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {profile.technologies.slice(0, 6).map((technology) => (
-                    <Badge key={technology.name} tone="accent">
-                      {technology.name}
-                    </Badge>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Complete onboarding to personalize the API matching experience.
-              </p>
-            )}
-          </AnimatedDiv>
-          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <h2 className="font-semibold text-zinc-950 dark:text-white">
-              Active filters
-            </h2>
-            <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <p>Sort: {filters.sortBy}</p>
-              <p>Min stars: {filters.minimumStars}</p>
-              <p>Health: {filters.healthScore}%+</p>
-              <p>Ignored: {ignoredProjectIds.length}</p>
-            </div>
-          </AnimatedDiv>
         </aside>
       </div>
     </AppShell>

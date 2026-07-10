@@ -32,8 +32,8 @@ export function ProjectGrid({
   if (state === "empty") {
     return (
       <EmptyState
-        title="No projects match these filters"
-        description="Try relaxing the filters or refreshing matches. Ignored projects can be restored from the history page."
+        title="No projects available yet"
+        description="Refresh matches to ask the API for updated repository suggestions. Ignored projects can be restored from the history page."
         action={emptyAction}
       />
     );
