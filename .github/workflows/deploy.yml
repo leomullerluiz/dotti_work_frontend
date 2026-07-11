@@ -58,6 +58,7 @@ jobs:
           rm -rf deploy
           mkdir -p deploy
           cp -R out/. deploy/
+          cp public/.htaccess deploy/.htaccess
 
       - name: Normalize FTP target directory
         shell: bash

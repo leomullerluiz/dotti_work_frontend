@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Next static export emits /u/index.html, while public profiles are shared as
+# /u/:login. Keep the pretty URL in the browser and let the client page read it.
+RewriteRule ^u/([^/]+)/?$ /u/ [L,QSA]
+
+ErrorDocument 404 /404.html
