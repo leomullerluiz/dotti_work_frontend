@@ -21,29 +21,29 @@ import { publicProfileHref } from "@/utils/publicProfileRoutes";
 
 const seniorityLabels: Record<ApiSeniority, string> = {
   junior: "Junior",
-  mid: "Pleno",
+  mid: "Mid-Level",
   senior: "Senior",
 };
 
 const proficiencyLabels: Record<ApiProficiencyLevel, string> = {
-  learning: "Aprendendo",
-  basic: "Basico",
-  daily: "Uso diario",
-  advanced: "Avancado",
+  learning: "Learning",
+  basic: "Basic",
+  daily: "Daily use",
+  advanced: "Advanced",
 };
 
 const interestLabels: Record<ApiInterestLevel, string> = {
-  learn: "Quero aprender",
-  contribute: "Quero contribuir",
-  mentor: "Posso mentorar",
+  learn: "Wants to learn",
+  contribute: "Wants to contribute",
+  mentor: "Can mentor",
 };
 
 const repositoryStateLabels: Partial<Record<ApiRepositoryStateValue, string>> = {
-  saved: "Salvo",
-  researching: "Pesquisando",
-  working: "Em andamento",
-  pull_request_sent: "PR enviado",
-  contributed: "Contribuiu",
+  saved: "Saved",
+  researching: "Researching",
+  working: "In progress",
+  pull_request_sent: "Pull request sent",
+  contributed: "Contributed",
 };
 
 function profileName(data: ApiPublicUserProfileData) {
