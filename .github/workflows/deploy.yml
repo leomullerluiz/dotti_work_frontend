@@ -26,6 +26,7 @@ jobs:
         run: |
           {
             echo "NEXT_PUBLIC_DOTTI_API_BASE_URL=${{ secrets.PROD_DOTTI_API_BASE_URL }}"
+            echo "NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${{ secrets.GOOGLE_ANALYTICS_ID }}"
             echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}"
           } > .env.production

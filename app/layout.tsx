@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ConsentAwareGoogleAnalytics } from "@/components/analytics/ConsentAwareGoogleAnalytics";
 import { STORAGE_KEYS } from "@/data/constants";
 import { AppProviders } from "@/contexts/AppProviders";
 import "./globals.css";
@@ -84,6 +85,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full">
         <AppProviders>{children}</AppProviders>
+        <ConsentAwareGoogleAnalytics />
       </body>
     </html>
   );
