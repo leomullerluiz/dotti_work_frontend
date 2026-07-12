@@ -34,10 +34,10 @@ const sortOptions: Array<{
   label: string;
   icon: typeof Star;
 }> = [
-  { value: "stars", label: "Most stars", icon: Star },
-  { value: "open_issues", label: "Most issues", icon: CircleDot },
-  { value: "contributors", label: "Most contributors", icon: Users },
-];
+    { value: "stars", label: "Most stars", icon: Star },
+    { value: "open_issues", label: "Most issues", icon: CircleDot },
+    { value: "contributors", label: "Most contributors", icon: Users },
+  ];
 
 function normalizeSort(value: string | null): ApiTopRepositorySortBy {
   if (value === "open_issues" || value === "contributors") {
@@ -237,9 +237,8 @@ export function TopRepositoriesPage() {
       <PageHeader
         eyebrow="Discovery"
         title="Top repositories"
-        description={`${items.length} repositories loaded by ${activeSortLabel.toLowerCase()}${
-          activeTechnology ? ` in ${activeTechnology.name}` : ""
-        }.`}
+        description={`${items.length} repositories loaded by ${activeSortLabel.toLowerCase()}${activeTechnology ? ` in ${activeTechnology.name}` : ""
+          }.`}
       />
 
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
@@ -404,17 +403,6 @@ export function TopRepositoriesPage() {
             helper={metadata?.cached ? "Cached result" : "Updated result"}
             icon={<Star size={18} />}
           />
-          <AnimatedDiv className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-            <h2 className="font-semibold text-zinc-950 dark:text-white">
-              Active filter
-            </h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge tone="accent">{activeSortLabel}</Badge>
-              <Badge tone={activeTechnology ? "blue" : "neutral"}>
-                {activeTechnology?.name ?? "All"}
-              </Badge>
-            </div>
-          </AnimatedDiv>
         </aside>
       </div>
     </AppShell>
