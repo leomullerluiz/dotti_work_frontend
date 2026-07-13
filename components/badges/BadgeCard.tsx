@@ -51,7 +51,7 @@ export function BadgeCard({
           </div>
           <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             {secret
-              ? "Keep contributing to reveal this achievement."
+              ? ""
               : badge.description}
           </p>
           {awardDate ? (

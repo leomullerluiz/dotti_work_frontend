@@ -33,12 +33,8 @@ export function MatchesPage() {
   const canRefresh = !isLoading && !isRefreshing;
   const bestMatch = projects[0];
 
-  const refreshAndScrollToTop = () => {
+  const startBackgroundRefresh = () => {
     refreshMatches();
-
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
   };
 
   return (
@@ -52,11 +48,12 @@ export function MatchesPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={refreshAndScrollToTop}
+              onClick={startBackgroundRefresh}
               disabled={isLoading || isRefreshing}
+              aria-busy={isRefreshing}
             >
               <RefreshCcw size={16} className={isRefreshing ? "animate-spin" : ""} />
-              Refresh matches
+              {isRefreshing ? "Searching..." : "Refresh matches"}
             </Button>
             <Link href="/profile" className={buttonClasses({ variant: "secondary" })}>
               <UserRound size={16} />
@@ -82,37 +79,45 @@ export function MatchesPage() {
             <>
               <ProjectGrid
                 projects={projects}
-                isLoading={isLoading || isRefreshing}
+                isLoading={isLoading}
                 emptyAction={
                   <Button
                     type="button"
-                    onClick={refreshAndScrollToTop}
+                    onClick={startBackgroundRefresh}
                     disabled={!canRefresh}
+                    aria-busy={isRefreshing}
                   >
                     <RefreshCcw
                       size={16}
                       className={isRefreshing ? "animate-spin" : ""}
                     />
-                    Refresh matches
+                    {isRefreshing ? "Searching..." : "Refresh matches"}
                   </Button>
                 }
               />
 
-              {projects.length > 0 && canRefresh ? (
+              {projects.length > 0 ? (
                 <AnimatedDiv className="mt-5 rounded-xl border border-zinc-200 bg-white p-5 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                   <h2 className="font-semibold text-zinc-950 dark:text-white">
                     Want newer recommendations?
                   </h2>
                   <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                    Refresh matches to ask the API for updated repository suggestions.
+                    {isRefreshing
+                      ? "The API is updating recommendations in the background."
+                      : "Refresh matches to ask the API for updated repository suggestions."}
                   </p>
                   <Button
                     type="button"
                     className="mt-4"
-                    onClick={refreshAndScrollToTop}
+                    onClick={startBackgroundRefresh}
+                    disabled={!canRefresh}
+                    aria-busy={isRefreshing}
                   >
-                    <RefreshCcw size={16} />
-                    Refresh matches
+                    <RefreshCcw
+                      size={16}
+                      className={isRefreshing ? "animate-spin" : ""}
+                    />
+                    {isRefreshing ? "Searching..." : "Refresh matches"}
                   </Button>
                 </AnimatedDiv>
               ) : null}

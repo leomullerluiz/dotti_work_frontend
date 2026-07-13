@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -67,6 +68,8 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isRefreshingRef = useRef(false);
+  const apiProjectsRef = useRef(apiProjects);
   const { status } = useAuth();
   const {
     clearIgnored,
@@ -75,6 +78,10 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
     restoreProject,
   } = useSavedProjects();
   const { showToast } = useToast();
+
+  useEffect(() => {
+    apiProjectsRef.current = apiProjects;
+  }, [apiProjects]);
 
   const loadMatches = useCallback(async () => {
     if (status !== "authenticated") {
@@ -162,25 +169,39 @@ export function MatchesProvider({ children }: { children: ReactNode }) {
   }, [setFilters, showToast]);
 
   const refreshMatches = useCallback(() => {
+    if (status !== "authenticated") {
+      return;
+    }
+
+    if (isRefreshingRef.current) {
+      showToast("Project search is already running.", "info");
+      return;
+    }
+
     async function run() {
+      isRefreshingRef.current = true;
       setIsRefreshing(true);
       setError(null);
 
       try {
         const response = await refreshMatchesFromApi();
         setApiProjects(response.items.map(adaptApiMatchToMatchedProject));
-        showToast("Matches refreshed");
+        setHasLoaded(true);
+        showToast("Project search completed.");
       } catch (refreshError) {
         const message = messageForMatchesError(refreshError);
-        setError(message);
+        if (apiProjectsRef.current.length === 0) {
+          setError(message);
+        }
         showToast(message, "error");
       } finally {
+        isRefreshingRef.current = false;
         setIsRefreshing(false);
       }
     }
 
     void run();
-  }, [showToast]);
+  }, [showToast, status]);
 
   const ignoreProject = useCallback(
     async (repositoryId: string) => {
