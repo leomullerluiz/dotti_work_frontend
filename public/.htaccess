@@ -1,5 +1,12 @@
 RewriteEngine On
 
+# Reject malformed URLs with duplicated slashes in the path before the Next.js
+# client router boots and shows its generic next_error screen.
+RewriteCond %{REQUEST_URI} !^/404\.html$
+RewriteCond %{THE_REQUEST} [[:space:]]/{2,}[^[:space:]?]* [OR]
+RewriteCond %{THE_REQUEST} [[:space:]]/[^[:space:]?]*//+[^[:space:]?]*
+RewriteRule ^ - [R=404,L]
+
 # Next static export emits /u/index.html, while public profiles are shared as
 # /u/:login. Keep the pretty URL in the browser and let the client page read it.
 RewriteRule ^u/([^/]+)/?$ /u/ [L,QSA]

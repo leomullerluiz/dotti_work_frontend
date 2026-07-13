@@ -112,3 +112,14 @@ test("acceptance criteria keep primary authenticated pages with loading, error, 
     assert.ok(/EmptyState|No /.test(text), `${path} should expose empty UI`);
   }
 });
+
+test("acceptance criteria keep Hostinger malformed path handling wired to the exported 404", () => {
+  const htaccess = readFileSync("public/.htaccess", "utf8");
+
+  assert.match(
+    htaccess,
+    /duplicated slashes[\s\S]*RewriteRule \^ - \[R=404,L\]/,
+  );
+  assert.match(htaccess, /RewriteCond %\{REQUEST_URI\} !\^\/404\\\.html\$/);
+  assert.match(htaccess, /ErrorDocument 404 \/404\.html/);
+});

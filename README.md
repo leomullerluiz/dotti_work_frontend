@@ -154,6 +154,7 @@ Static export cannot render arbitrary dynamic paths on demand. Routes that need 
 - Repository detail links use `/projects?owner=...&repo=...`.
 - Invite links use `/invite/?code=...`.
 - Public profiles are shared as `/u/:login`; `public/.htaccess` rewrites those requests to `/u/` on Apache/Hostinger so the client route can read the path.
+- Malformed paths with duplicated slashes are rejected by `public/.htaccess` so production serves the exported `404.html` instead of booting the Next client error shell.
 
 ## Project Structure
 
@@ -252,7 +253,7 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml`:
 9. explicitly copies `public/.htaccess`;
 10. uploads the artifact to Hostinger over FTP.
 
-`public/.htaccess` contains the public profile rewrite needed by the Apache deployment target.
+`public/.htaccess` contains the public profile rewrite and malformed-path 404 guard needed by the Apache deployment target.
 
 ## Documentation
 
