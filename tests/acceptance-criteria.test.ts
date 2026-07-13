@@ -123,3 +123,20 @@ test("acceptance criteria keep Hostinger malformed path handling wired to the ex
   assert.match(htaccess, /RewriteCond %\{REQUEST_URI\} !\^\/404\\\.html\$/);
   assert.match(htaccess, /ErrorDocument 404 \/404\.html/);
 });
+
+test("acceptance criteria keep the first key egg public profile contract documented", () => {
+  const openapi = readFileSync("openapi.yaml", "utf8");
+
+  assert.match(openapi, /ProfileFrame:/);
+  assert.match(openapi, /profile_frame:/);
+  assert.match(openapi, /first_key_first_egg/);
+  assert.match(openapi, /style_config:/);
+  assert.match(openapi, /shadow:/);
+});
+
+test("acceptance criteria keep legendary badge level rendering available", () => {
+  const badgeImage = readFileSync("components/badges/BadgeImage.tsx", "utf8");
+
+  assert.match(badgeImage, /legendary:/);
+  assert.match(badgeImage, /violet/);
+});

@@ -994,6 +994,19 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
         seniority: "mid",
         goals: [],
         joined_at: null,
+        profile_frame: {
+          slug: "first_key_first_egg_frame",
+          name: "First to the key frame",
+          image_url: null,
+          style_config: {
+            accent: "#f05d4f",
+            ring: "#f8c14a",
+            shadow: "#15202b",
+            glow: "#fff3c4",
+          },
+          source_badge_slug: "first_key_first_egg",
+          awarded_at: "2026-07-13 15:00:00",
+        },
       },
       github: {
         login: "ana-dev",
@@ -1027,6 +1040,10 @@ test("dotti service layer follows the OpenAPI service contract", async (t) => {
     assert.equal(lastUrl().pathname, "/api/public/profiles/ana%20dev");
     assert.equal(lastRequest().init?.credentials, "omit");
     assert.equal(fetchedPublicProfile.profile.login, "ana-dev");
+    assert.equal(
+      fetchedPublicProfile.profile.profile_frame?.source_badge_slug,
+      "first_key_first_egg",
+    );
 
     resetFetchMock();
     enqueueData({

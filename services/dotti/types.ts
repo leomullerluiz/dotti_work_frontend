@@ -119,6 +119,7 @@ export type ApiUserProfile = {
   onboarding_completed?: boolean;
   onboarding_completed_at?: string | null;
   goals?: ApiProfileGoal[];
+  profile_frame?: ApiProfileFrame | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -464,6 +465,16 @@ export type ApiPublicProfileUser = {
   seniority?: ApiSeniority | null;
   goals?: ApiProfileGoal[];
   joined_at?: string | null;
+  profile_frame?: ApiProfileFrame | null;
+};
+
+export type ApiProfileFrame = {
+  slug: string;
+  name: string;
+  image_url: string | null;
+  style_config: Record<string, unknown> | null;
+  source_badge_slug: string | null;
+  awarded_at: string | null;
 };
 
 export type ApiPublicGitHubProfile = {

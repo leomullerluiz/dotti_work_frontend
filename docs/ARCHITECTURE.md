@@ -64,6 +64,7 @@ Frontend routing patterns account for that constraint:
 - Invite links use `/invite/?code=...`.
 - Public profile pretty URLs use `/u/:login`, with `public/.htaccess` rewriting them to `/u/`.
 - The legacy `/projects/[owner]/[repo]` route exists only as a generated compatibility route with placeholder params.
+- Public profile frames are rendered from the API `profile.profile_frame.style_config` tokens and do not require static frame image assets.
 
 If the project moves to a Node-capable Next.js deployment later, these routing constraints can be revisited.
 

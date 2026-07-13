@@ -297,6 +297,7 @@ Public profiles expose a curated, shareable contributor page:
 - technologies;
 - metrics;
 - badges;
+- optional profile frame rewards;
 - featured repositories;
 - canonical/share URLs.
 

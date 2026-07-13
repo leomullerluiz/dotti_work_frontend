@@ -7,6 +7,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { BadgeImage } from "@/components/badges/BadgeImage";
 import { GitHubIcon } from "@/components/ui/Icons";
 import type {
@@ -16,7 +17,9 @@ import type {
   ApiRepositoryStateValue,
   ApiSeniority,
 } from "@/services/dotti/types";
+import { cn } from "@/utils/cn";
 import { formatNumber } from "@/utils/format";
+import { profileFrameCssVariables } from "@/utils/profileFrame";
 import { publicProfileHref } from "@/utils/publicProfileRoutes";
 
 const seniorityLabels: Record<ApiSeniority, string> = {
@@ -141,6 +144,16 @@ export function PublicProfileContent({
   const name = profileName(data);
   const login = data.profile.login?.trim() || data.github.login?.trim() || "";
   const avatarUrl = data.profile.avatar_url?.trim();
+  const profileFrame = data.profile.profile_frame;
+  const profileFrameStyle = profileFrame
+    ? ({
+        ...profileFrameCssVariables(profileFrame.style_config),
+        background:
+          "conic-gradient(from 210deg, var(--profile-frame-ring), var(--profile-frame-accent), var(--profile-frame-ring), var(--profile-frame-accent), var(--profile-frame-ring))",
+        boxShadow:
+          "0 18px 42px color-mix(in oklab, var(--profile-frame-shadow) 28%, transparent), 0 0 0 1px color-mix(in oklab, var(--profile-frame-glow) 65%, transparent)",
+      } satisfies CSSProperties)
+    : undefined;
   const websiteUrl = externalUrl(data.profile.website_url);
   const githubUrl = externalUrl(data.profile.github_profile_url) ?? externalUrl(data.github.url);
   const memberSince = safeDate(data.metrics.member_since ?? data.profile.joined_at);
@@ -157,19 +170,35 @@ export function PublicProfileContent({
     <article className="space-y-6">
       <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-coral-400/10 text-coral-500 shadow-sm dark:border-white/10">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={`${name} avatar`}
-                width={96}
-                height={96}
-                unoptimized
-                className="size-full object-cover"
-              />
-            ) : (
-              <UserRound size={38} />
+          <div
+            className={cn(
+              "relative flex shrink-0 items-center justify-center",
+              profileFrame ? "size-28 rounded-[1.35rem] p-[3px]" : "size-24",
             )}
+            style={profileFrameStyle}
+            title={profileFrame?.name}
+          >
+            <div
+              className={cn(
+                "relative flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border bg-coral-400/10 text-coral-500 shadow-sm",
+                profileFrame
+                  ? "border-white/80 dark:border-white/20"
+                  : "border-zinc-200 dark:border-white/10",
+              )}
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={`${name} avatar`}
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="size-full object-cover"
+                />
+              ) : (
+                <UserRound size={38} />
+              )}
+            </div>
           </div>
 
           <div className="min-w-0 flex-1">
