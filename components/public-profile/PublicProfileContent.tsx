@@ -1,5 +1,4 @@
 import {
-  Award,
   BriefcaseBusiness,
   Building2,
   ExternalLink,
@@ -8,6 +7,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Image from "next/image";
+import { BadgeImage } from "@/components/badges/BadgeImage";
 import { GitHubIcon } from "@/components/ui/Icons";
 import type {
   ApiInterestLevel,
@@ -313,20 +313,7 @@ export function PublicProfileContent({
                 key={userBadge.slug}
                 className="flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20"
               >
-                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-coral-400/10 text-coral-500">
-                  {userBadge.badge.image_url ? (
-                    <Image
-                      src={userBadge.badge.image_url}
-                      alt={userBadge.badge.image_alt || userBadge.badge.name}
-                      width={48}
-                      height={48}
-                      unoptimized
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <Award size={20} />
-                  )}
-                </div>
+                <BadgeImage level={userBadge.badge.level} className="size-12" />
                 <div className="min-w-0">
                   <p className="font-medium text-zinc-950 dark:text-white">
                     {userBadge.badge.name}

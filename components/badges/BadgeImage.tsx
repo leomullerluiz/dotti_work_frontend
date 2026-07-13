@@ -1,75 +1,49 @@
-"use client";
-
-import { useState } from "react";
-import Image from "next/image";
-import {
-  Award,
-  Bookmark,
-  CheckCircle2,
-  Compass,
-  Flame,
-  GitPullRequest,
-  LockKeyhole,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { Award } from "lucide-react";
 import { cn } from "@/utils/cn";
 
-const iconMap: Record<string, LucideIcon> = {
-  award: Award,
-  bookmark: Bookmark,
-  "check-circle": CheckCircle2,
-  compass: Compass,
-  flame: Flame,
-  github: Award,
-  "git-pull-request": GitPullRequest,
-  sparkles: Sparkles,
+const badgeLevelClasses: Record<string, string> = {
+  bronze:
+    "border-orange-300 bg-orange-500/10 text-orange-700 dark:border-orange-400/30 dark:text-orange-200",
+  silver:
+    "border-zinc-300 bg-zinc-500/10 text-zinc-700 dark:border-zinc-400/30 dark:text-zinc-200",
+  gold:
+    "border-amber-300 bg-amber-400/15 text-amber-700 dark:border-amber-300/30 dark:text-amber-200",
+  platinum:
+    "border-sky-300 bg-sky-400/10 text-sky-700 dark:border-sky-300/30 dark:text-sky-200",
+  diamond:
+    "border-cyan-300 bg-cyan-400/10 text-cyan-700 dark:border-cyan-300/30 dark:text-cyan-200",
+  emerald:
+    "border-emerald-300 bg-emerald-400/10 text-emerald-700 dark:border-emerald-300/30 dark:text-emerald-200",
+  ruby:
+    "border-rose-300 bg-rose-400/10 text-rose-700 dark:border-rose-300/30 dark:text-rose-200",
+  legendary:
+    "border-violet-300 bg-violet-400/10 text-violet-700 dark:border-violet-300/30 dark:text-violet-200",
 };
 
+function badgeLevelClass(level?: string | null) {
+  const key = level?.trim().toLowerCase();
+
+  return key && badgeLevelClasses[key]
+    ? badgeLevelClasses[key]
+    : "border-coral-300 bg-coral-500/10 text-coral-600 dark:border-coral-400/30 dark:text-coral-200";
+}
+
 export function BadgeImage({
-  imageUrl,
-  imageAlt,
-  icon,
-  earned,
-  secret,
+  level,
   className,
 }: {
-  imageUrl?: string | null;
-  imageAlt?: string | null;
-  icon?: string | null;
   level?: string;
-  earned?: boolean;
-  secret?: boolean;
   className?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const Icon = secret && !earned ? LockKeyhole : iconMap[icon ?? ""] ?? Award;
-  const normalizedImageUrl = imageUrl?.trim();
-  const showImage = Boolean(normalizedImageUrl) && !imageFailed && (!secret || earned);
-
   return (
     <div
       className={cn(
-        "flex size-14 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-400",
-        earned
-          ? "border-coral-300 bg-coral-500/10 text-coral-600 dark:border-coral-400/30 dark:text-coral-200"
-          : "",
+        "flex size-14 shrink-0 items-center justify-center rounded-lg border",
+        badgeLevelClass(level),
         className,
       )}
     >
-      {showImage && normalizedImageUrl ? (
-        <Image
-          src={normalizedImageUrl}
-          alt={imageAlt ?? "Achievement badge"}
-          width={60}
-          height={60}
-          unoptimized
-          className={cn("size-10 rounded-md object-contain", earned ? "" : "grayscale")}
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <Icon size={24} aria-hidden="true" />
-      )}
+      <Award size={24} aria-hidden="true" />
     </div>
   );
 }

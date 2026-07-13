@@ -117,12 +117,6 @@ export function LoginPage({ returnTo }: { returnTo?: string }) {
                   </p>
                 </div>
               </div>
-              <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-white/10 dark:bg-black/20 dark:text-zinc-400">
-                Next destination:{" "}
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  {safeReturnTo}
-                </span>
-              </div>
             </div>
 
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 shadow-sm dark:border-white/10 dark:bg-black/20">

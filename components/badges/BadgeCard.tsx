@@ -38,12 +38,7 @@ export function BadgeCard({
     <AnimatedArticle className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
       <div className="flex gap-4">
         <BadgeImage
-          imageUrl={badge.image_url}
-          imageAlt={badge.image_alt}
-          icon={badge.icon}
           level={badge.level}
-          earned={earned}
-          secret={secret}
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

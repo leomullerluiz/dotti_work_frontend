@@ -82,12 +82,7 @@ export function BadgeProgressCard({
       {nextProgress ? (
         <div className="mt-5 flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-black/20">
           <BadgeImage
-            imageUrl={nextProgress.badge.image_url}
-            imageAlt={nextProgress.badge.image_alt}
-            icon={nextProgress.badge.icon}
             level={nextProgress.badge.level}
-            earned={false}
-            secret={nextProgress.badge.is_secret}
             className="size-12"
           />
           <div className="min-w-0 flex-1">
